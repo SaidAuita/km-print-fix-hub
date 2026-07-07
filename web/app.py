@@ -252,6 +252,18 @@ async def get_chunk_details(chunk_id: str):
         raise HTTPException(status_code=404, detail="Фрагмент не найден")
     return JSONResponse(chunk)
 
+@app.post("/translate")
+async def translate_chunk(request: Request):
+    data = await request.json()
+    text = data.get("text", "").strip()
+    target_lang = data.get("target_lang", "ru").strip()
+    
+    if not text:
+        raise HTTPException(status_code=400, detail="Текст для перевода пуст")
+        
+    translated = llm_client.translate_text(text, target_lang)
+    return {"translated": translated}
+
 @app.post("/settings")
 async def update_settings(settings: dict):
     for k, v in settings.items():

@@ -184,3 +184,57 @@ class LLMClient:
                         pass
         except Exception as e:
             yield f"\n[!] Ошибка генерации ответа LLM: {e}\nУбедитесь, что сервер LM Studio запущен на порту {api_base} и контекстное окно модели достаточно для объема запроса."
+
+    def translate_text(self, text: str, target_lang: str) -> str:
+        """
+        Translates a given text into target_lang (e.g. 'en', 'ru', 'de') using the local LLM.
+        """
+        api_base = self.config_mgr.get("LM_STUDIO_API_BASE", "http://localhost:1234/v1")
+        api_url = f"{api_base.rstrip('/')}/chat/completions"
+        model_name = self._get_loaded_model_name()
+        
+        # Build language names for prompt clarity
+        lang_names = {
+            "ru": "Russian (Русский)",
+            "en": "English",
+            "de": "German (Deutsch)",
+            "fr": "French (Français)",
+            "es": "Spanish (Español)",
+            "it": "Italian (Italiano)",
+            "ja": "Japanese (日本語)",
+            "zh": "Chinese (中文)",
+            "ko": "Korean (한국어)",
+            "tr": "Turkish (Türkçe)"
+        }
+        lang_name = lang_names.get(target_lang.lower(), target_lang)
+        
+        system_prompt = (
+            "You are a professional technical translator specializing in Konica Minolta printers.\n"
+            f"Translate the provided text into the target language: {lang_name}.\n"
+            "Strict rules:\n"
+            "1. Output ONLY the translated text. Do not add comments, greetings, markdown blocks (other than matching the original), or explanations.\n"
+            "2. Preserve original formatting, headers (like --- Автор: ...), and error codes (like C-2201).\n"
+            "3. Translate user technical advice clearly and concisely."
+        )
+        
+        payload = {
+            "model": model_name,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": text}
+            ],
+            "temperature": 0.2,
+            "max_tokens": 1500,
+            "stream": False
+        }
+        
+        try:
+            response = requests.post(api_url, json=payload, timeout=90)
+            response.raise_for_status()
+            data = response.json()
+            translation = data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+            if translation:
+                return translation
+            raise Exception("Empty response from LLM")
+        except Exception as e:
+            return f"[Error translating text: {e}]"

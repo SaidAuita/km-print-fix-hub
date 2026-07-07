@@ -4,6 +4,11 @@
 let currentActiveChunk = null; // Хранит загруженный чанк для модального окна
 let currentSources = []; // Хранит список источников текущего ответа
 
+// Переменные состояния перевода чанка
+let originalChunkText = "";
+let translatedChunkText = "";
+let isTranslated = false;
+
 function formatResponseText(text) {
     if (!text) return "";
     
@@ -340,7 +345,11 @@ async function openChunkDetails(chunkId) {
         document.getElementById("chunkModalSubtitle").textContent = `ID: ${chunk.id} | Индекс чанка: ${chunk.chunk_index}`;
         
         // Заполняем вкладку Текст
-        document.getElementById("content-text").textContent = chunk.text;
+        originalChunkText = chunk.text;
+        translatedChunkText = "";
+        isTranslated = false;
+        document.getElementById("content-text").textContent = originalChunkText;
+        updateTranslateButtonState();
         
         // Заполняем вкладку JSON
         document.getElementById("content-json").textContent = JSON.stringify(chunk, null, 4);
@@ -392,6 +401,82 @@ function switchChunkTab(tabName) {
             }
         }
     });
+
+    // Управляем видимостью кнопки перевода (показываем только на вкладке Текст)
+    const translateBtn = document.getElementById("translateChunkBtn");
+    if (translateBtn) {
+        if (tabName === "text") {
+            translateBtn.classList.remove("hidden");
+        } else {
+            translateBtn.classList.add("hidden");
+        }
+    }
+}
+
+// Обновление состояния надписи на кнопке перевода
+function updateTranslateButtonState() {
+    const textSpan = document.getElementById("translateBtnText");
+    if (!textSpan) return;
+    
+    const isRu = (window.TRANSLATIONS && window.TRANSLATIONS.lang_code === "ru");
+    
+    if (isTranslated) {
+        textSpan.textContent = isRu ? "Оригинал" : "Original";
+    } else {
+        const langName = (window.TRANSLATIONS && window.TRANSLATIONS.lang_name) ? window.TRANSLATIONS.lang_name : "Your Language";
+        textSpan.textContent = isRu ? "Перевести" : `Translate to ${langName}`;
+    }
+}
+
+// Вызов LLM для перевода текста чанка на текущий язык
+async function translateActiveChunk() {
+    const textDiv = document.getElementById("content-text");
+    const textSpan = document.getElementById("translateBtnText");
+    const isRu = (window.TRANSLATIONS && window.TRANSLATIONS.lang_code === "ru");
+
+    if (!textDiv || !textSpan) return;
+
+    if (isTranslated) {
+        // Возвращаем оригинал
+        textDiv.textContent = originalChunkText;
+        isTranslated = false;
+        updateTranslateButtonState();
+        return;
+    }
+
+    if (translatedChunkText) {
+        // Показываем уже готовый перевод
+        textDiv.textContent = translatedChunkText;
+        isTranslated = true;
+        updateTranslateButtonState();
+        return;
+    }
+
+    // Запускаем процесс перевода
+    textSpan.textContent = isRu ? "Перевод..." : "Translating...";
+    const targetLang = (window.TRANSLATIONS && window.TRANSLATIONS.lang_code) ? window.TRANSLATIONS.lang_code : "en";
+
+    try {
+        const response = await fetch("/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                text: originalChunkText,
+                target_lang: targetLang
+            })
+        });
+
+        if (!response.ok) throw new Error("Translation failed");
+        
+        const data = await response.json();
+        translatedChunkText = data.translated;
+        textDiv.textContent = translatedChunkText;
+        isTranslated = true;
+        updateTranslateButtonState();
+    } catch (e) {
+        alert(e.message);
+        updateTranslateButtonState();
+    }
 }
 
 // Показать/скрыть модалку чанка
