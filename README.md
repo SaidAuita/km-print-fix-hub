@@ -47,9 +47,9 @@ start.bat
 Open your browser and navigate to: `http://127.0.0.1:8000/`
 
 #### 5. Indexing Your Own PDF Manuals
-You can enrich the search engine by indexing your own Konica Minolta PDF service manuals:
+The application supports automatic PDF indexing on startup:
 1. Place your PDF files into the `Service_manuals/` directory in the project root.
-2. Run `PDF_INDEXING_Light.bat` to rebuild the index database with your custom manuals.
+2. Launch the application (`start.bat`). The server will automatically detect any new, updated, or deleted files, update the database, and rebuild the vector store.
 
 ---
 
@@ -96,9 +96,9 @@ start.bat
 Откройте в браузере: `http://127.0.0.1:8000/`
 
 #### 5. Индексирование собственных PDF-руководств
-Вы можете расширить поисковую базу данных, проиндексировав собственные сервис-мануалы Konica Minolta в формате PDF:
+Приложение поддерживает автоматическое индексирование PDF при запуске:
 1. Поместите ваши файлы PDF в папку `Service_manuals/` в корне проекта.
-2. Запустите файл `PDF_INDEXING_Light.bat` для обновления поискового индекса.
+2. Запустите приложение (`start.bat`). Сервер автоматически обнаружит добавленные, измененные или удаленные файлы, обновит базу данных и перестроит векторный индекс.
 
 ---
 
