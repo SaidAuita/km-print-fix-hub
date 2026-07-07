@@ -50,6 +50,7 @@ Open your browser and navigate to: `http://127.0.0.1:8000/`
 The application supports automatic PDF indexing on startup:
 1. Place your PDF files into the `Service_manuals/` directory in the project root.
 2. Launch the application (`start.bat`). The server will automatically detect any new, updated, or deleted files, update the database, and rebuild the vector store.
+3. If you need to remove PDF files from the index, delete them from the `Service_manuals/` and `Archive/official/` directories and restart the application. The index will rebuild and remove their data from the database.
 
 ---
 
@@ -99,6 +100,7 @@ start.bat
 Приложение поддерживает автоматическое индексирование PDF при запуске:
 1. Поместите ваши файлы PDF в папку `Service_manuals/` в корне проекта.
 2. Запустите приложение (`start.bat`). Сервер автоматически обнаружит добавленные, измененные или удаленные файлы, обновит базу данных и перестроит векторный индекс.
+3. Если нужно удалить из индекса файлы PDF — удалите их из папок `Service_manuals` и `Archive\official` и перезапустите приложение. Индекс перестроится и удалит информацию из базы.
 
 ---
 
