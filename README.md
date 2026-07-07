@@ -37,10 +37,7 @@ RAG (Retrieval-Augmented Generation) search engine and interactive technical sup
 Since database indices are large, they are hosted externally.
 1. Download the required database ZIP:
    * **[Mega.nz Link for Light/Anonymized Index (Index_anon.zip)](https://mega.nz/)** (Placeholder)
-   * **[Mega.nz Link for Full Index (Index_full.zip)](https://mega.nz/)** (Placeholder)
-   * **[Mega.nz Link for Forum Archive (Archive.zip)](https://mega.nz/)** (For Full version only)
 2. Extract the index contents into the `Index/` folder in the project root.
-3. For the Full version, extract the HTML threads archive into the `Archive/` folder.
 
 #### 4. Launching the App
 Run the startup script:
@@ -84,10 +81,7 @@ Open your browser and navigate to: `http://127.0.0.1:8000/`
 Файлы индексов базы знаний имеют большой объем и скачиваются отдельно.
 1. Скачайте необходимый архив базы данных:
    * **[Ссылка на Mega.nz для Light (обезличенный индекс) (Index_anon.zip)](https://mega.nz/)** (Плейсхолдер)
-   * **[Ссылка на Mega.nz для Full (полный индекс) (Index_full.zip)](https://mega.nz/)** (Плейсхолдер)
-   * **[Ссылка на Mega.nz для Архива форумов (Archive.zip)](https://mega.nz/)** (Только для Full-версии)
 2. Распакуйте содержимое архива индексов в папку `Index/` в корне проекта.
-3. Для Full-версии распакуйте архив форумов в папку `Archive/`.
 
 #### 4. Запуск приложения
 Запустите стартовый файл:
