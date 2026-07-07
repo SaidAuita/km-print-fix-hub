@@ -171,6 +171,12 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         {{ t.settings_btn }}
                     </button>
+
+                    <!-- About Author Button -->
+                    <button onclick="toggleAboutModal(true)" class="p-2 rounded-lg bg-[#142036] hover:bg-[#1c2e4d] text-gray-300 hover:text-gray-100 transition-colors flex items-center gap-1.5 text-xs font-semibold" title="{{ t.about_author_btn_title }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span>{{ t.about_author_btn }}</span>
+                    </button>
                 </div>
             </header>
 
@@ -554,6 +560,85 @@
         </div>
     </div>
 
+    <!-- About Modal -->
+    <div id="aboutModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-[#0e1626] border border-[#1e293b] rounded-2xl w-full max-w-lg p-6 shadow-2xl mx-4 flex flex-col max-h-[85vh] relative overflow-hidden">
+            <!-- Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-[#1e293b] mb-4 z-10">
+                <h3 class="text-sm md:text-base font-bold text-gray-100 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>{{ t.about_author_title }}</span>
+                </h3>
+                <button onclick="toggleAboutModal(false)" class="text-gray-400 hover:text-gray-200 cursor-pointer">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto space-y-5 text-sm text-gray-300 pr-1 z-10">
+                <!-- GitHub Section -->
+                <div class="p-4 rounded-xl bg-[#142036] border border-[#1e293b] flex items-center justify-between hover:border-brand-500/30 transition-all">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-300">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.138 20.161 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-200 text-xs">KM Print Fix Hub GitHub</h4>
+                            <p class="text-[11px] text-gray-500">Official repository & updates</p>
+                        </div>
+                    </div>
+                    <a href="https://github.com/SaidAuita/km-print-fix-hub" target="_blank" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-white transition-colors flex items-center gap-1 cursor-pointer">
+                        <span>Open</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </a>
+                </div>
+
+                <!-- Support Section -->
+                <div class="space-y-2">
+                    <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{{ t.about_support_title }}</h4>
+                    <div class="p-4 rounded-xl bg-brand-500/5 border border-brand-500/20 space-y-3">
+                        <p class="text-xs text-gray-300 leading-relaxed">
+                            {{ t.about_support_text }}
+                        </p>
+                        <div class="flex items-center gap-2 bg-[#060a13] p-2.5 rounded-lg border border-[#1e293b]">
+                            <span class="text-[9px] bg-green-500/10 text-green-400 font-bold px-1.5 py-0.5 rounded tracking-wide shrink-0">USDT TRC20</span>
+                            <code class="text-xs font-mono text-gray-300 select-all break-all" id="walletAddr">TBWzmMZWbirvACAtPfoZioAhhwSM4n2ArY</code>
+                            <button onclick="copyWalletAddress()" class="p-1 rounded bg-gray-850 hover:bg-gray-850 hover:text-white transition-all cursor-pointer shrink-0 text-gray-400" title="Copy Wallet Address">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Projects Section -->
+                <div class="space-y-2">
+                    <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{{ t.about_other_projects }}</h4>
+                    <div class="p-4 rounded-xl bg-[#142036] border border-[#1e293b] space-y-3 hover:border-brand-500/20 transition-all">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <h5 class="font-bold text-gray-200 text-xs">ComfyUI Photoshop Plugin (PH-CU-S)</h5>
+                                <p class="text-[11px] text-gray-400 mt-1 leading-relaxed">
+                                    {{ t.about_plugin_desc }}
+                                </p>
+                            </div>
+                            <a href="https://github.com/SaidAuita/ComfyUI_PH-CU-S" target="_blank" class="px-2.5 py-1 rounded bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-white transition-colors shrink-0 flex items-center gap-0.5 cursor-pointer">
+                                <span>Git</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="flex items-center justify-end pt-3 border-t border-[#1e293b] mt-4 z-10">
+                <button onclick="toggleAboutModal(false)" class="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 font-semibold text-xs text-white transition-colors cursor-pointer">
+                    {{ t.modal_close }}
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script>
         function togglePDFsModal(show) {
@@ -569,17 +654,40 @@
         function openPDFsModal() {
             togglePDFsModal(true);
         }
-        // Handle ESC key to close PDFs modal
+        function toggleAboutModal(show) {
+            const modal = document.getElementById("aboutModal");
+            if (modal) {
+                if (show) {
+                    modal.classList.remove("hidden");
+                } else {
+                    modal.classList.add("hidden");
+                }
+            }
+        }
+        function copyWalletAddress() {
+            const walletAddr = document.getElementById("walletAddr").textContent;
+            navigator.clipboard.writeText(walletAddr).then(() => {
+                alert("USDT TRC20 Wallet Address copied to clipboard!");
+            }).catch(err => {
+                console.error("Could not copy text: ", err);
+            });
+        }
+        // Handle ESC key to close modals
         document.addEventListener("keydown", function(e) {
             if (e.key === "Escape") {
                 togglePDFsModal(false);
+                toggleAboutModal(false);
             }
         });
-        // Close PDFs modal when clicking outside
+        // Close modals when clicking outside
         document.addEventListener("click", function(e) {
-            const modal = document.getElementById("pdfsModal");
-            if (modal && e.target === modal) {
+            const pdfsModal = document.getElementById("pdfsModal");
+            if (pdfsModal && e.target === pdfsModal) {
                 togglePDFsModal(false);
+            }
+            const aboutModal = document.getElementById("aboutModal");
+            if (aboutModal && e.target === aboutModal) {
+                toggleAboutModal(false);
             }
         });
     </script>
