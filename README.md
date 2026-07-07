@@ -2,6 +2,12 @@
 
 Bilingual documentation / Двуязычная документация: **[English](#english) | [Русский](#русский)**
 
+<p align="center">
+  <img src="images/print_fix_01.jpg" width="32%" alt="Screenshot 1" />
+  <img src="images/print_fix_02.jpg" width="32%" alt="Screenshot 2" />
+  <img src="images/print_fix_03.jpg" width="32%" alt="Screenshot 3" />
+</p>
+
 ---
 
 ## English
