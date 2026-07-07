@@ -1,0 +1,80 @@
+/* static/style.css */
+/* Кастомные стили для Trade-Print AI Assistant */
+
+/* Кастомные скроллбары для тёмной темы */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #3b82f6;
+}
+
+/* Glassmorphism и размытия */
+.backdrop-blur-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* Стилизация кода в ответах */
+#answerText pre {
+    background-color: #0b0f19;
+    border: 1px border #1e293b;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 8px 0;
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.85em;
+    color: #34d399;
+}
+
+#answerText code {
+    background-color: #142036;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.9em;
+    color: #e2e8f0;
+}
+
+/* Спиннер загрузки текста */
+@keyframes pulse-indigo {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .3;
+    }
+}
+
+/* Кнопка с эффектом свечения */
+#askBtn {
+    box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.2);
+}
+#askBtn:hover {
+    box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.35);
+}
+
+/* Анимация появления элементов */
+.fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -1,0 +1,34 @@
+# Python virtual environments & compiled caches
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local user configurations & history database
+settings.json
+history/
+history.db
+
+# Large compiled database indices (downloaded from Mega.nz)
+Index/
+Index_anon/
+Index_backup/
+
+# Raw forum archives
+Archive/
+!Archive/official/
+
+# Service manuals and official PDFs
+Service_manuals/*.pdf
+Archive/official/*.pdf
+
+# Heavy machine learning model weights
+embeddings/model_cache/
+
+# Temporary files & debug logs
+*.log
+scratch/
+debug_build.bat
+test.bat

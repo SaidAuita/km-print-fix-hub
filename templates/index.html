@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t.title }}</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f5f7ff',
+                            100: '#ebf0ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <script>
+        window.IS_BUILD = {{ is_build | tojson }};
+        window.TRANSLATIONS = {
+            confirm_clear: "{{ t.confirm_clear | escape }}",
+            confirm_delete: "{{ t.confirm_delete | escape }}",
+            llm_error_prefix: "{{ t.llm_error_prefix | escape }}",
+            author_prefix: "{{ t.author_prefix | escape }}",
+            posts_label: "{{ t.posts_label | escape }}",
+            chunk_load_error: "{{ t.chunk_load_error | escape }}",
+            save_error: "{{ t.save_error | escape }}",
+            network_error: "{{ t.network_error | escape }}",
+            delete_error: "{{ t.delete_error | escape }}",
+            clear_error: "{{ t.clear_error | escape }}"
+        };
+    </script>
+</head>
+<body class="bg-[#0b0f19] text-gray-200 h-screen flex flex-col overflow-hidden">
+
+    <!-- Wrapper -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Sidebar (История) -->
+        <aside class="w-80 border-r border-[#1e293b] bg-[#0d1527] flex flex-col overflow-hidden">
+            <!-- Sidebar Header -->
+            <div class="p-4 border-b border-[#1e293b] flex items-center justify-between">
+                <span class="font-semibold text-gray-100 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    {{ t.query_history }}
+                </span>
+                <button id="clearHistoryBtn" class="text-xs text-red-400 hover:text-red-300 transition-colors {% if not history %}hidden{% endif %}">
+                    {{ t.clear_all }}
+                </button>
+            </div>
+            
+            <!-- History List -->
+            <div class="flex-1 overflow-y-auto p-3 space-y-2" id="historyList">
+                {% if history %}
+                    {% for chat in history %}
+                    <div class="history-card group relative flex items-start justify-between p-3 rounded-lg bg-[#142036] hover:bg-[#1b2b47] transition-all cursor-pointer" data-chat="{{ chat | tojson | forceescape }}">
+                        <div class="flex flex-col gap-1 pr-6 overflow-hidden">
+                            <span class="text-sm font-medium text-gray-300 truncate w-full group-hover:text-gray-100">{{ chat.query }}</span>
+                            <span class="text-[10px] text-gray-500">{{ chat.timestamp[:16].replace('T', ' ') }}</span>
+                        </div>
+                        <button data-id="{{ chat.id }}" class="delete-history-btn absolute right-2 top-3 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-gray-500 text-sm mt-8" id="emptyHistoryMsg">
+                        {{ t.empty_history }}
+                    </div>
+                {% endif %}
+            </div>
+        </aside>
+
+        <!-- Main Panel -->
+        <main class="flex-1 flex flex-col bg-[#0b0f19] overflow-hidden relative">
+            
+            <!-- Main Header -->
+            <header class="h-16 border-b border-[#1e293b] px-6 flex items-center justify-between bg-[#0e1626]/80 backdrop-blur-md z-10">
+                <div class="flex flex-col">
+                    <h1 class="text-base font-bold text-gray-100 flex items-center gap-2">
+                        {{ t.title }}
+                    </h1>
+                    <span class="text-xs text-gray-500">
+                        {{ t.active_model }}: <span class="text-brand-500 font-semibold" id="loadedModelName">{{ loaded_model }}</span>
+                    </span>
+                </div>
+                
+                <!-- Forums Links -->
+                <div class="hidden lg:flex items-center gap-4 text-xs text-gray-400 font-medium">
+                    <span class="text-gray-500 uppercase tracking-wider text-[10px] font-bold">Forums / Форумы:</span>
+                    
+                    <div class="flex flex-col items-center leading-none">
+                        <a href="https://forum.trade-print.ru/forumdisplay.php?f=13" target="_blank" class="hover:text-brand-400 transition-all">TradePrint (ru)</a>
+                        {% if sync_dates.tradeprint %}
+                        <span class="text-[10px] text-blue-400/90 font-semibold mt-1" title="Последняя запись в базе">
+                            {% if sync_dates.tradeprint.date %}{{ sync_dates.tradeprint.date }} ({{ sync_dates.tradeprint.count }}){% else %}{{ sync_dates.tradeprint }}{% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <span class="text-gray-700 select-none">•</span>
+                    
+                    <div class="flex flex-col items-center leading-none">
+                        <a href="https://www.copytechnet.com/forum/tech-support/konica-minolta/" target="_blank" class="hover:text-brand-400 transition-all">CopyTechNet (en)</a>
+                        {% if sync_dates.copytechnet %}
+                        <span class="text-[10px] text-blue-400/90 font-semibold mt-1" title="Последняя запись в базе">
+                            {% if sync_dates.copytechnet.date %}{{ sync_dates.copytechnet.date }} ({{ sync_dates.copytechnet.count }}){% else %}{{ sync_dates.copytechnet }}{% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <span class="text-gray-700 select-none">•</span>
+                    
+                    <div class="flex flex-col items-center leading-none">
+                        <a href="https://www.colorprintingforum.com/community/konica-minolta-color-laser-printer-color-copier/" target="_blank" class="hover:text-brand-400 transition-all">ColorPrinting (en)</a>
+                        {% if sync_dates.colorprinting %}
+                        <span class="text-[10px] text-blue-400/90 font-semibold mt-1" title="Последняя запись в базе">
+                            {% if sync_dates.colorprinting.date %}{{ sync_dates.colorprinting.date }} ({{ sync_dates.colorprinting.count }}){% else %}{{ sync_dates.colorprinting }}{% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <span class="text-gray-700 select-none">•</span>
+                    
+                    <div class="flex flex-col items-center leading-none">
+                        <a href="https://printplanet.com/forums/digital-printing-discussion.37/" target="_blank" class="hover:text-brand-400 transition-all">PrintPlanet (en)</a>
+                        {% if sync_dates.printplanet %}
+                        <span class="text-[10px] text-blue-400/90 font-semibold mt-1" title="Последняя запись в базе">
+                            {% if sync_dates.printplanet.date %}{{ sync_dates.printplanet.date }} ({{ sync_dates.printplanet.count }}){% else %}{{ sync_dates.printplanet }}{% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Controls -->
+                <div class="flex items-center gap-4">
+
+                    <!-- Language Selector Dropdown -->
+                    <div class="relative inline-block text-left" id="langSelectorContainer">
+                        <button id="langSelectBtn" class="p-2 rounded-lg bg-[#142036] hover:bg-[#1c2e4d] text-gray-300 hover:text-gray-100 transition-colors flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
+                            <span>{{ settings.LAST_LANG | default('ru') | upper }}</span>
+                            <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div id="langDropdown" class="hidden absolute right-0 mt-2 w-28 rounded-lg bg-[#142036] border border-[#1e293b] shadow-xl z-20 overflow-hidden">
+                            <div class="py-1">
+                                {% for lang_opt in available_languages %}
+                                <button onclick="changeLanguage('{{ lang_opt.code }}')" class="w-full text-left px-4 py-2 text-xs font-semibold text-gray-300 hover:bg-[#1c2e4d] hover:text-white transition-colors">
+                                    {{ lang_opt.name }} ({{ lang_opt.code | upper }})
+                                </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings Button -->
+                    <button onclick="toggleSettingsModal(true)" class="p-2 rounded-lg bg-[#142036] hover:bg-[#1c2e4d] text-gray-300 hover:text-gray-100 transition-colors flex items-center gap-1.5 text-xs font-semibold">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        {{ t.settings_btn }}
+                    </button>
+                </div>
+            </header>
+
+            <!-- Chat Area (Scrollable) -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6" id="chatArea">
+                <!-- Welcome View -->
+                <div class="max-w-3xl mx-auto text-center py-20" id="welcomeView">
+                    <div class="w-16 h-16 bg-[#16233d] rounded-2xl flex items-center justify-center mx-auto mb-6 text-brand-500 border border-brand-500/20">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-100 mb-2">{{ t.welcome_title }}</h2>
+                    <p class="text-sm text-gray-500 max-w-lg mx-auto">
+                        {{ t.welcome_subtitle }}
+                    </p>
+                </div>
+                
+                <!-- Main Answer Block -->
+                <div class="max-w-3xl mx-auto hidden" id="answerBlock">
+                    <!-- User Query Bubble -->
+                    <div class="flex items-start gap-4 mb-6">
+                        <div class="w-8 h-8 bg-brand-600 rounded-full flex items-center justify-center font-bold text-sm text-white shrink-0">U</div>
+                        <div class="bg-[#142036] rounded-xl px-4 py-3 text-sm text-gray-200 shadow-lg max-w-[85%] border border-[#1e293b]">
+                            <p id="queryText" class="whitespace-pre-wrap font-medium"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Assistant Response Bubble -->
+                    <div class="flex items-start gap-4">
+                        <div class="w-8 h-8 bg-[#16233d] border border-brand-500/30 rounded-full flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        </div>
+                        <div class="flex-1">
+                            <div class="prose prose-invert prose-sm max-w-none bg-[#0e1626]/50 rounded-2xl p-5 border border-[#1e293b]/70 shadow-2xl">
+                                <div id="thoughtBlock" class="hidden mb-4 bg-[#142036]/50 rounded-xl p-3 border border-[#1e293b]/40 text-xs text-gray-400">
+                                    <details id="thoughtDetails" class="group" open>
+                                        <summary class="flex items-center justify-between cursor-pointer select-none font-semibold text-gray-400 hover:text-gray-200 transition-colors">
+                                            <span class="flex items-center gap-1.5">
+                                                <svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                                                <span>{{ t.reasoning_label }}</span>
+                                            </span>
+                                            <span class="text-[10px] text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+                                        </summary>
+                                        <div id="thoughtText" class="mt-2 text-gray-500 font-mono whitespace-pre-wrap leading-normal border-t border-[#1e293b]/30 pt-2"></div>
+                                    </details>
+                                </div>
+                                <div id="answerText" class="text-sm leading-relaxed whitespace-pre-wrap text-gray-300"></div>
+                                <div id="streamIndicator" class="flex items-center gap-1 mt-2 hidden">
+                                    <span class="w-2 h-2 rounded-full bg-brand-500 animate-ping"></span>
+                                    <span class="text-xs text-gray-500 italic">{{ t.generating_response }}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Sources list -->
+                            <div id="sourcesBlock" class="mt-6 border-t border-[#1e293b] pt-4 hidden">
+                                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">{{ t.sources_header }}</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="sourcesList"></div>
+                            </div>
+
+                            <div id="debugBlock" class="mt-8 border-t border-[#1e293b] pt-6 hidden">
+                                <h3 class="text-xs font-bold text-yellow-500 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    {{ t.debug_title }}
+                                </h3>
+                                
+                                <!-- Context Optimizer Stats -->
+                                <div id="optimizerStatsBlock" class="hidden mb-4 bg-green-500/10 border border-green-500/20 rounded-xl p-3 flex flex-wrap justify-between items-center text-xs text-green-400 font-semibold gap-2">
+                                    <span class="flex items-center gap-1.5">
+                                        <svg class="w-4 h-4 text-green-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                        <span>Оптимизация контекста активна / Context Optimizer Active</span>
+                                    </span>
+                                    <div class="flex gap-4">
+                                        <span>Документы / Docs: <span id="optDocsBefore">0</span> → <span id="optDocsAfter">0</span></span>
+                                        <span>Слова / Words: <span id="optWordsBefore">0</span> → <span id="optWordsAfter">0</span> (<span id="optSavedPct">0</span>% сэкономлено)</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                                    <!-- FTS5 Found -->
+                                    <div class="bg-[#121927] p-3 rounded-lg border border-gray-800 flex flex-col h-64">
+                                        <span class="font-bold text-blue-400 mb-2 border-b border-gray-800 pb-1.5 flex justify-between">
+                                            <span>SQLite FTS5</span>
+                                            <span class="text-gray-500 text-[10px]" id="ftsCount">0</span>
+                                        </span>
+                                        <div class="flex-1 overflow-y-auto space-y-1.5 pr-1" id="ftsDebugList"></div>
+                                    </div>
+                                    <!-- Vector Found -->
+                                    <div class="bg-[#121927] p-3 rounded-lg border border-gray-800 flex flex-col h-64">
+                                        <span class="font-bold text-purple-400 mb-2 border-b border-gray-800 pb-1.5 flex justify-between">
+                                            <span>Векторный поиск</span>
+                                            <span class="text-gray-500 text-[10px]" id="vectorCount">0</span>
+                                        </span>
+                                        <div class="flex-1 overflow-y-auto space-y-1.5 pr-1" id="vectorDebugList"></div>
+                                    </div>
+                                    <!-- Reranked Final -->
+                                    <div class="bg-[#121927] p-3 rounded-lg border border-gray-800 flex flex-col h-64">
+                                        <span class="font-bold text-green-400 mb-2 border-b border-gray-800 pb-1.5 flex justify-between">
+                                            <span>{{ t.debug_rerank }}</span>
+                                            <span class="text-gray-500 text-[10px]" id="rerankCount">0</span>
+                                        </span>
+                                        <div class="flex-1 overflow-y-auto space-y-1.5 pr-1" id="rerankDebugList"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer (Input Area) -->
+            <footer class="p-6 border-t border-[#1e293b] bg-[#0e1626]/50 backdrop-blur-md">
+                <!-- Dropdowns for model and search mode -->
+                <div class="max-w-3xl mx-auto flex flex-wrap gap-4 mb-3 items-center text-xs text-gray-400">
+                    <div class="flex items-center gap-2">
+                        <label for="modelSelect" class="font-semibold">{{ t.km_model_label }}</label>
+                        <select id="modelSelect" class="bg-[#142036] border border-[#1e293b] rounded-lg px-2 py-1.5 focus:outline-none focus:border-brand-500 text-gray-200 cursor-pointer">
+                            <option value="all" {% if settings.LAST_MODEL == 'all' or not settings.LAST_MODEL %}selected{% endif %}>{{ t.all_models_option }}</option>
+                            
+                            <optgroup label="AccurioPress">
+                                <option value="C14000" {% if settings.LAST_MODEL == 'C14000' %}selected{% endif %}>AccurioPress C14000 / C12000</option>
+                                <option value="C6100" {% if settings.LAST_MODEL == 'C6100' %}selected{% endif %}>AccurioPress C6100 / C6085</option>
+                                <option value="C4080" {% if settings.LAST_MODEL == 'C4080' %}selected{% endif %}>AccurioPress C4080 / C4070 / C4065</option>
+                                <option value="C3080" {% if settings.LAST_MODEL == 'C3080' %}selected{% endif %}>AccurioPress C3080 / C3070</option>
+                            </optgroup>
+                            
+                            <optgroup label="bizhub PRESS">
+                                <option value="C2060" {% if settings.LAST_MODEL == 'C2060' %}selected{% endif %}>bizhub PRESS C2060 / C2070</option>
+                                <option value="1060" {% if settings.LAST_MODEL == '1060' %}selected{% endif %}>bizhub PRESS C1060 / C1070</option>
+                                <option value="6000" {% if settings.LAST_MODEL == '6000' %}selected{% endif %}>bizhub PRESS C6000 / C7000</option>
+                            </optgroup>
+                            
+                            <optgroup label="bizhub PRO">
+                                <option value="5501" {% if settings.LAST_MODEL == '5501' %}selected{% endif %}>bizhub PRO C5501 / C6501</option>
+                                <option value="6500" {% if settings.LAST_MODEL == '6500' %}selected{% endif %}>bizhub PRO C6500 / C5500</option>
+                            </optgroup>
+                            
+                            <optgroup label="bizhub Color">
+                                <option value="C250I" {% if settings.LAST_MODEL == 'C250I' %}selected{% endif %}>bizhub C250i / C300i / C360i (i-Series)</option>
+                                <option value="C258" {% if settings.LAST_MODEL == 'C258' %}selected{% endif %}>bizhub C258 / C308 / C368 (8-Series)</option>
+                                <option value="c224" {% if settings.LAST_MODEL == 'c224' %}selected{% endif %}>bizhub C224 / C284 / C364 (4-Series)</option>
+                                <option value="c220" {% if settings.LAST_MODEL == 'c220' %}selected{% endif %}>bizhub C220 / C280 / C360 (0-Series)</option>
+                                <option value="c452" {% if settings.LAST_MODEL == 'c452' %}selected{% endif %}>bizhub C452 / C451 / C353</option>
+                            </optgroup>
+                            
+                            <optgroup label="bizhub PRO B&W">
+                                <option value="1250" {% if settings.LAST_MODEL == '1250' %}selected{% endif %}>bizhub PRESS 1250 / 1200 / 1050</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="searchModeSelect" class="font-semibold">{{ t.search_label }}</label>
+                        <select id="searchModeSelect" class="bg-[#142036] border border-[#1e293b] rounded-lg px-2 py-1.5 focus:outline-none focus:border-brand-500 text-gray-200 cursor-pointer">
+                            <option value="related" {% if settings.LAST_SEARCH_MODE == 'related' or not settings.LAST_SEARCH_MODE %}selected{% endif %}>{{ t.search_mode_related }}</option>
+                            <option value="only" {% if settings.LAST_SEARCH_MODE == 'only' %}selected{% endif %}>{{ t.search_mode_only }}</option>
+                            <option value="all" {% if settings.LAST_SEARCH_MODE == 'all' %}selected{% endif %}>{{ t.search_mode_all }}</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="sourceFilterSelect" class="font-semibold">{{ t.source_label }}</label>
+                        <select id="sourceFilterSelect" class="bg-[#142036] border border-[#1e293b] rounded-lg px-2 py-1.5 focus:outline-none focus:border-brand-500 text-gray-200 cursor-pointer">
+                            <option value="auto" {% if settings.LAST_SOURCE_FILTER == 'auto' or not settings.LAST_SOURCE_FILTER %}selected{% endif %}>{{ t.source_mode_auto }}</option>
+                            <option value="official" {% if settings.LAST_SOURCE_FILTER == 'official' %}selected{% endif %}>{{ t.source_mode_official }}</option>
+                            <option value="forum" {% if settings.LAST_SOURCE_FILTER == 'forum' %}selected{% endif %}>{{ t.source_mode_forum }}</option>
+                        </select>
+                    </div>
+                    <!-- PDFs List Button -->
+                    <button type="button" onclick="openPDFsModal()" class="flex items-center gap-1.5 bg-[#142036] hover:bg-[#1c2e4d] border border-[#1e293b] rounded-lg px-2.5 py-1.5 text-xs text-gray-300 font-semibold cursor-pointer transition-colors" title="{{ t.pdfs_modal_title }}">
+                        <svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <span>{{ t.pdfs_btn }}</span>
+                    </button>
+                </div>
+                <div class="max-w-3xl mx-auto flex items-stretch gap-3">
+                    <textarea id="queryInput" placeholder="{{ t.input_placeholder }}" class="flex-1 bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 resize-none h-12 min-h-[48px] max-h-36 transition-all" rows="1"></textarea>
+                    <button id="askBtn" onclick="submitQuery()" class="bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm px-6 rounded-xl transition-colors shadow-lg shadow-brand-600/10 flex items-center justify-center shrink-0 gap-2">
+                        <span>{{ t.ask_btn }}</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- MODALS -->
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-[#0e1626] border border-[#1e293b] rounded-2xl w-full max-w-xl p-6 shadow-2xl mx-4">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-[#1e293b]">
+                <h3 class="text-base font-bold text-gray-100 flex items-center gap-1.5">
+                    <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    {{ t.settings_title }}
+                </h3>
+                <button onclick="toggleSettingsModal(false)" class="text-gray-400 hover:text-gray-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <form id="settingsForm" class="space-y-4 text-sm" onsubmit="saveSettings(event)">
+                <!-- Host & Port -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">{{ t.settings_api_base }}</label>
+                        <input type="text" name="LM_STUDIO_API_BASE" value="{{ settings.LM_STUDIO_API_BASE }}" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">{{ t.settings_embedding_provider }}</label>
+                        <input type="text" name="EMBEDDING_PROVIDER" value="{{ settings.EMBEDDING_PROVIDER }}" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200">
+                    </div>
+                </div>
+
+                <!-- Model names -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">{{ t.settings_embedding_model }}</label>
+                    <input type="text" name="EMBEDDING_MODEL" value="{{ settings.EMBEDDING_MODEL }}" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200">
+                </div>
+
+                <!-- Limits -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">{{ t.settings_fts_candidates }}</label>
+                        <input type="number" name="FTS_RESULTS_COUNT" value="{{ settings.FTS_RESULTS_COUNT }}" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">{{ t.settings_vector_candidates }}</label>
+                        <input type="number" name="VECTOR_RESULTS_COUNT" value="{{ settings.VECTOR_RESULTS_COUNT }}" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">{{ t.settings_rerank_candidates }}</label>
+                        <input type="number" name="RERANKED_RESULTS_COUNT" value="{{ settings.RERANKED_RESULTS_COUNT }}" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200">
+                    </div>
+                </div>
+
+                <!-- Context words, temperature -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">{{ t.settings_max_words }}</label>
+                        <input type="number" name="MAX_CONTEXT_SIZE_WORDS" value="{{ settings.MAX_CONTEXT_SIZE_WORDS }}" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">{{ t.settings_temperature }}</label>
+                        <input type="number" step="0.1" name="LLM_TEMPERATURE" value="{{ settings.LLM_TEMPERATURE }}" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">{{ t.settings_max_tokens }}</label>
+                    <input type="number" name="LLM_MAX_TOKENS" value="{{ settings.LLM_MAX_TOKENS }}" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200">
+                </div>
+
+                <!-- System Prompt Textarea -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">{{ t.settings_system_prompt }}</label>
+                    <textarea name="SYSTEM_PROMPT" rows="6" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200 font-mono text-xs resize-y">{{ settings.SYSTEM_PROMPT }}</textarea>
+                </div>
+
+                <!-- Checkboxes Group inside Settings Modal -->
+                <div class="border-t border-[#1e293b] pt-4 mt-4 space-y-3">
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" id="debugToggleModal" {% if settings.LAST_DEBUG_MODE %}checked{% endif %} class="rounded border-gray-700 bg-gray-800 text-brand-500 focus:ring-brand-500 w-4 h-4">
+                        <span class="text-xs text-gray-400 font-semibold">{{ t.search_diagnostics }}</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" id="showReasoningCheckModal" {% if settings.LAST_SHOW_REASONING %}checked{% endif %} class="rounded border-gray-700 bg-gray-800 text-brand-500 focus:ring-brand-500 w-4 h-4">
+                        <span class="text-xs text-gray-400 font-semibold">{{ t.show_reasoning }}</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" id="strictModeCheckModal" {% if settings.LAST_STRICT_MODE or settings.LAST_STRICT_MODE is not defined %}checked{% endif %} class="rounded border-gray-700 bg-gray-800 text-brand-500 focus:ring-brand-500 w-4 h-4">
+                        <span class="text-xs text-gray-400 font-semibold">{{ t.strict_mode }}</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" id="contextOptimizerCheckModal" {% if settings.LAST_ENABLE_CONTEXT_OPTIMIZER %}checked{% endif %} class="rounded border-gray-700 bg-gray-800 text-brand-500 focus:ring-brand-500 w-4 h-4">
+                        <span class="text-xs text-gray-400 font-semibold">{{ t.enable_context_optimizer }}</span>
+                    </label>
+                </div>
+
+                <!-- Form Buttons -->
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#1e293b] mt-6">
+                    <button type="button" onclick="toggleSettingsModal(false)" class="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 font-semibold transition-colors">
+                        {{ t.settings_cancel }}
+                    </button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 font-semibold text-white transition-colors">
+                        {{ t.settings_save }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Chunk Preview Modal -->
+    <div id="chunkModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-[#0e1626] border border-[#1e293b] rounded-2xl w-full max-w-4xl h-[85vh] p-6 shadow-2xl flex flex-col mx-4">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-[#1e293b]">
+                <div class="flex flex-col">
+                    <h3 class="text-base font-bold text-gray-100 truncate max-w-xl" id="chunkModalTitle"></h3>
+                    <span class="text-xs text-gray-500" id="chunkModalSubtitle"></span>
+                </div>
+                <button onclick="toggleChunkModal(false)" class="text-gray-400 hover:text-gray-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- Tabs Menu -->
+            <div class="flex items-center border-b border-gray-800 text-xs font-semibold gap-1 mt-3">
+                <button id="tab-text" onclick="switchChunkTab('text')" class="px-4 py-2 border-b-2 border-brand-500 text-brand-400">{{ t.modal_tab_text }}</button>
+                <button id="tab-html" onclick="switchChunkTab('html')" class="px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200">{{ t.modal_tab_html }}</button>
+                <button id="tab-json" onclick="switchChunkTab('json')" class="px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200">{{ t.modal_tab_json }}</button>
+            </div>
+            
+            <!-- Tab Contents -->
+            <div class="flex-1 overflow-hidden mt-4 relative">
+                <!-- Text Tab -->
+                <div id="content-text" class="h-full overflow-y-auto text-sm leading-relaxed p-4 bg-[#0a0f1d] border border-gray-800 rounded-xl whitespace-pre-wrap text-gray-300"></div>
+                <!-- HTML Copy Tab (iframe) -->
+                <div id="content-html" class="h-full hidden">
+                    <iframe id="chunkIframe" class="w-full h-full rounded-xl bg-white border border-gray-800" src="about:blank"></iframe>
+                </div>
+                <!-- JSON Tab -->
+                <pre id="content-json" class="h-full overflow-y-auto text-xs p-4 bg-[#0a0f1d] border border-gray-800 rounded-xl text-green-400 font-mono hidden"></pre>
+            </div>
+            
+            <!-- Modal Footer Links -->
+            <div class="flex items-center justify-between pt-3 border-t border-[#1e293b] mt-4 text-xs">
+                <a id="chunkOriginalLink" href="#" target="_blank" class="text-brand-400 hover:underline flex items-center gap-1 font-semibold">
+                    {{ t.modal_open_original }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                </a>
+                <button onclick="toggleChunkModal(false)" class="px-4 py-2 rounded-lg bg-gray-850 hover:bg-gray-800 font-semibold border border-gray-850 transition-colors text-gray-300 hover:text-gray-100">
+                    {{ t.modal_close }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDFs List Modal -->
+    <div id="pdfsModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-[#0e1626] border border-[#1e293b] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="px-6 py-4 border-b border-[#1e293b] flex items-center justify-between">
+                <h3 class="font-bold text-gray-100 flex items-center gap-2 text-sm md:text-base">
+                    <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>{{ t.pdfs_modal_title }}</span>
+                </h3>
+                <button onclick="togglePDFsModal(false)" class="text-gray-400 hover:text-gray-200 cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4">
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    {{ t.pdfs_modal_desc }}
+                </p>
+                <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    {% if official_pdfs %}
+                        {% for pdf in official_pdfs %}
+                        <div class="flex items-center gap-2.5 bg-[#142036] border border-[#1e293b]/70 rounded-xl px-3.5 py-2.5 text-xs text-gray-200">
+                            <svg class="w-4 h-4 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                            <span class="truncate font-semibold text-gray-300" title="{{ pdf }}">{{ pdf }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-6 text-xs text-gray-500">
+                            {{ t.pdfs_modal_empty }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-[#090f1a] border-t border-[#1e293b] flex justify-end">
+                <button onclick="togglePDFsModal(false)" class="bg-[#142036] hover:bg-[#1c2e4d] text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors cursor-pointer">
+                    {{ t.modal_close }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        function togglePDFsModal(show) {
+            const modal = document.getElementById("pdfsModal");
+            if (modal) {
+                if (show) {
+                    modal.classList.remove("hidden");
+                } else {
+                    modal.classList.add("hidden");
+                }
+            }
+        }
+        function openPDFsModal() {
+            togglePDFsModal(true);
+        }
+        // Handle ESC key to close PDFs modal
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape") {
+                togglePDFsModal(false);
+            }
+        });
+        // Close PDFs modal when clicking outside
+        document.addEventListener("click", function(e) {
+            const modal = document.getElementById("pdfsModal");
+            if (modal && e.target === modal) {
+                togglePDFsModal(false);
+            }
+        });
+    </script>
+    <script src="/static/app.js?v={{ range(1, 100000) | random }}"></script>
+</body>
+</html>
