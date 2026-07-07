@@ -14,8 +14,11 @@ function formatResponseText(text) {
         .replace(/>/g, "&gt;");
         
     // 2. Превращаем [SOURCE X] и [Источник X] в кликабельные HTML-ссылки
+    const isRu = (window.TRANSLATIONS && window.TRANSLATIONS.lang_code === "ru");
+    const sourcePrefix = isRu ? "Источник" : "Source";
+    const sourceTooltip = isRu ? "Посмотреть первоисточник" : "View source";
     escaped = escaped.replace(/\[(?:SOURCE|Источник)\s*(\d+)\]/gi, (match, p1) => {
-        return `<a href="#" onclick="openChunkDetailsBySourceIndex(${p1}); return false;" class="text-brand-400 hover:text-brand-300 font-semibold underline decoration-dotted inline-flex items-center gap-0.5" title="Посмотреть первоисточник">[Источник ${p1}]</a>`;
+        return `<a href="#" onclick="openChunkDetailsBySourceIndex(${p1}); return false;" class="text-brand-400 hover:text-brand-300 font-semibold underline decoration-dotted inline-flex items-center gap-0.5" title="${sourceTooltip}">[${sourcePrefix} ${p1}]</a>`;
     });
     
     // 3. Базовый парсинг Markdown:
@@ -370,14 +373,23 @@ function switchChunkTab(tabName) {
     tabs.forEach(t => {
         const btn = document.getElementById(`tab-${t}`);
         const cnt = document.getElementById(`content-${t}`);
-        if (t === tabName) {
-            btn.classList.add("border-brand-500", "text-brand-400");
-            btn.classList.remove("border-transparent", "text-gray-400");
-            cnt.classList.remove("hidden");
-        } else {
-            btn.classList.remove("border-brand-500", "text-brand-400");
-            btn.classList.add("border-transparent", "text-gray-400");
-            cnt.classList.add("hidden");
+        
+        if (btn) {
+            if (t === tabName) {
+                btn.classList.add("border-brand-500", "text-brand-400");
+                btn.classList.remove("border-transparent", "text-gray-400");
+            } else {
+                btn.classList.remove("border-brand-500", "text-brand-400");
+                btn.classList.add("border-transparent", "text-gray-400");
+            }
+        }
+        
+        if (cnt) {
+            if (t === tabName) {
+                cnt.classList.remove("hidden");
+            } else {
+                cnt.classList.add("hidden");
+            }
         }
     });
 }
