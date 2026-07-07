@@ -31,6 +31,7 @@
         window.IS_BUILD = {{ is_build | tojson }};
         window.DIRECT_FORUM_LINKS = {{ settings.LAST_DIRECT_FORUM_LINKS | tojson }};
         window.TRANSLATIONS = {
+            lang_code: "{{ settings.LAST_LANG or 'ru' }}",
             confirm_clear: "{{ t.confirm_clear | escape }}",
             confirm_delete: "{{ t.confirm_delete | escape }}",
             llm_error_prefix: "{{ t.llm_error_prefix | escape }}",
