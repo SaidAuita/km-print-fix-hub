@@ -194,13 +194,16 @@ class LLMClient:
         model_name = self._get_loaded_model_name()
         
         # Select prompt based on target language for better local model alignment
+        # We merge instructions and content into a single user message because small models
+        # (like Qwen 4b) follow instructions in user prompts much better than in system prompts.
         if target_lang.lower() == "ru":
-            system_prompt = (
+            prompt_content = (
                 "Ты — профессиональный технический переводчик.\n"
-                "Переведи предоставленный текст на русский язык.\n"
+                "Переведи предоставленный ниже текст на русский язык.\n"
                 "Правила:\n"
                 "1. Выведи ТОЛЬКО переведенный текст. Никаких примечаний, вступлений, пояснений или markdown-оформления (кроме оригинального).\n"
-                "2. Сохраняй неизменными технические коды ошибок (например, C-2201), названия деталей и оригинальное форматирование."
+                "2. Сохраняй неизменными технические коды ошибок (например, C-2201), названия деталей и оригинальное форматирование.\n\n"
+                f"Текст для перевода:\n{text}"
             )
         else:
             lang_names_en = {
@@ -215,32 +218,46 @@ class LLMClient:
                 "tr": "Turkish"
             }
             lang_name = lang_names_en.get(target_lang.lower(), target_lang)
-            system_prompt = (
+            prompt_content = (
                 "You are a professional technical translator.\n"
-                f"Translate the provided text into the target language: {lang_name}.\n"
+                f"Translate the provided text below into the target language: {lang_name}.\n"
                 "Strict rules:\n"
                 "1. Output ONLY the translated text. Do not add comments, greetings, explanations, or extra markdown formatting.\n"
-                "2. Preserve original formatting, line breaks, and technical codes (like C-2201) exactly."
+                "2. Preserve original formatting, line breaks, and technical codes (like C-2201) exactly.\n\n"
+                f"Text to translate:\n{text}"
             )
         
         payload = {
             "model": model_name,
             "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": text}
+                {"role": "user", "content": prompt_content}
             ],
             "temperature": 0.2,
             "max_tokens": 1500,
             "stream": False
         }
         
+        print(f"[*] API Base: {api_base}")
+        print(f"[*] Target model: {model_name}")
+        print(f"[*] Payload sent to LM Studio: {json.dumps(payload, ensure_ascii=False)[:300]}...")
+        
         try:
             response = requests.post(api_url, json=payload, timeout=90)
             response.raise_for_status()
             data = response.json()
-            translation = data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+            print(f"[*] LM Studio API Response Status: {response.status_code}")
+            print(f"[*] LM Studio API Response Snippet: {json.dumps(data, ensure_ascii=False)[:300]}...")
+            
+            message_data = data.get("choices", [{}])[0].get("message", {})
+            translation = message_data.get("content", "")
+            # Support reasoning-focused models that put output in reasoning_content
+            if not translation:
+                translation = message_data.get("reasoning_content", "")
+            
+            translation = translation.strip()
             if translation:
                 return translation
-            raise Exception("Empty response from LLM")
+            raise Exception("Empty response from LLM (both content and reasoning_content are empty)")
         except Exception as e:
+            print(f"[!] Translation error: {e}")
             return f"[Error translating text: {e}]"
