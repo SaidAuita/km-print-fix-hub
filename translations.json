@@ -71,7 +71,8 @@
     "pdfs_modal_title": "Индексированные руководства",
     "pdfs_modal_desc": "Следующие официальные сервис-мануалы и инструкции загружены в векторную базу данных и используются для поиска:",
     "pdfs_modal_empty": "Официальные PDF-руководства не найдены.",
-    "enable_context_optimizer": "Оптимизатор контекста LLM (сокращение токенов)"
+    "enable_context_optimizer": "Оптимизатор контекста LLM (сокращение токенов)",
+    "direct_forum_links": "Открывать ссылки на форумы напрямую (без просмотра чанка)"
   },
   "en": {
     "lang_code": "en",
@@ -145,7 +146,8 @@
     "pdfs_modal_title": "Indexed Manuals",
     "pdfs_modal_desc": "The following official service manuals and guides are indexed in the vector database and used to answer your queries:",
     "pdfs_modal_empty": "No official PDF manuals found.",
-    "enable_context_optimizer": "LLM Context Optimizer (token reduction)"
+    "enable_context_optimizer": "LLM Context Optimizer (token reduction)",
+    "direct_forum_links": "Open forum links directly (skip chunk preview)"
   },
   "de": {
     "lang_code": "de",
@@ -219,7 +221,8 @@
     "pdfs_modal_title": "Indizierte Handbücher",
     "pdfs_modal_desc": "Die folgenden offiziellen Servicehandbücher und Anleitungen sind in der Vektordatenbank indiziert und werden zur Beantwortung Ihrer Fragen verwendet:",
     "pdfs_modal_empty": "Keine offiziellen PDF-Handbücher gefunden.",
-    "enable_context_optimizer": "LLM Kontext-Optimierer (Token-Reduzierung)"
+    "enable_context_optimizer": "LLM Kontext-Optimierer (Token-Reduzierung)",
+    "direct_forum_links": "Forum-Links direkt öffnen (Auszugsvorschau überspringen)"
   },
   "fr": {
     "lang_code": "fr",
@@ -293,7 +296,8 @@
     "pdfs_modal_title": "Manuels indexés",
     "pdfs_modal_desc": "Les manuels d'entretien et guides officiels suivants sont indexés dans la base de données vectorielle et utilisés pour répondre à vos questions:",
     "pdfs_modal_empty": "Aucun manuel PDF officiel trouvé.",
-    "enable_context_optimizer": "Optimiseur de contexte LLM (réduction de jetons)"
+    "enable_context_optimizer": "Optimiseur de contexte LLM (réduction de jetons)",
+    "direct_forum_links": "Ouvrir les liens du forum directement (passer l'aperçu)"
   },
   "es": {
     "lang_code": "es",
@@ -367,7 +371,8 @@
     "pdfs_modal_title": "Manuales indexados",
     "pdfs_modal_desc": "Los siguientes manuales de servicio y guías oficiales están indexados en la base de datos vectorial y se utilizan para responder a sus consultas:",
     "pdfs_modal_empty": "No se encontraron manuales PDF oficiales.",
-    "enable_context_optimizer": "Optimizador de contexto LLM (reducción de tokens)"
+    "enable_context_optimizer": "Optimizador de contexto LLM (reducción de tokens)",
+    "direct_forum_links": "Abrir enlaces del foro directamente (omitir vista previa)"
   },
   "it": {
     "lang_code": "it",
@@ -441,7 +446,8 @@
     "pdfs_modal_title": "Manuali indicizzati",
     "pdfs_modal_desc": "I seguenti manuali di servizio e guide ufficiali sono indicizzati nel database vettoriale e utilizzati per rispondere alle vostre domande:",
     "pdfs_modal_empty": "Nessun manuale PDF ufficiale trovato.",
-    "enable_context_optimizer": "Ottimizzatore di contesto LLM (riduzione dei token)"
+    "enable_context_optimizer": "Ottimizzatore di contesto LLM (riduzione dei token)",
+    "direct_forum_links": "Apri direttamente i link del forum (salta l'anteprima)"
   },
   "zh": {
     "lang_code": "zh",
@@ -515,7 +521,8 @@
     "pdfs_modal_title": "已索引的手册",
     "pdfs_modal_desc": "以下官方服务手册和指南已索引到向量数据库中，并用于回答您的查询:",
     "pdfs_modal_empty": "未找到官方PDF手册。",
-    "enable_context_optimizer": "LLM 上下文优化器 (减少 Token)"
+    "enable_context_optimizer": "LLM 上下文优化器 (减少 Token)",
+    "direct_forum_links": "直接打开论坛链接（跳过预览）"
   },
   "ja": {
     "lang_code": "ja",
@@ -589,7 +596,8 @@
     "pdfs_modal_title": "インデックス済みマニュアル",
     "pdfs_modal_desc": "以下の公式サービスマニュアルおよびガイドがベクトルデータベースにインデックスされ、質問への回答に使用されています:",
     "pdfs_modal_empty": "公式PDFマニュアルが見つかりません。",
-    "enable_context_optimizer": "LLM コンテキスト最適化器 (トークン削減)"
+    "enable_context_optimizer": "LLM コンテキスト最適化器 (トークン削減)",
+    "direct_forum_links": "フォーラムのリンクを直接開く（プレビューをスキップ）"
   },
   "pt": {
     "lang_code": "pt",
@@ -728,6 +736,7 @@
     "pdfs_modal_title": "İndekslenmiş Kılavuzlar",
     "pdfs_modal_desc": "Aşağıdaki resmi servis kılavuzları ve rehberler vektör veritabanında indekslenmiştir ve sorularınızı yanıtlamak için kullanılır:",
     "pdfs_modal_empty": "Resmi PDF kılavuzu bulunamadı.",
-    "enable_context_optimizer": "LLM Bağlam Optimize Edici (token azaltma)"
+    "enable_context_optimizer": "LLM Bağlam Optimize Edici (token azaltma)",
+    "direct_forum_links": "Forum bağlantılarını doğrudan aç (önizlemeyi atla)"
   }
 }

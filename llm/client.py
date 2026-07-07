@@ -193,29 +193,35 @@ class LLMClient:
         api_url = f"{api_base.rstrip('/')}/chat/completions"
         model_name = self._get_loaded_model_name()
         
-        # Build language names for prompt clarity
-        lang_names = {
-            "ru": "Russian (Русский)",
-            "en": "English",
-            "de": "German (Deutsch)",
-            "fr": "French (Français)",
-            "es": "Spanish (Español)",
-            "it": "Italian (Italiano)",
-            "ja": "Japanese (日本語)",
-            "zh": "Chinese (中文)",
-            "ko": "Korean (한국어)",
-            "tr": "Turkish (Türkçe)"
-        }
-        lang_name = lang_names.get(target_lang.lower(), target_lang)
-        
-        system_prompt = (
-            "You are a professional technical translator specializing in Konica Minolta printers.\n"
-            f"Translate the provided text into the target language: {lang_name}.\n"
-            "Strict rules:\n"
-            "1. Output ONLY the translated text. Do not add comments, greetings, markdown blocks (other than matching the original), or explanations.\n"
-            "2. Preserve original formatting, headers (like --- Автор: ...), and error codes (like C-2201).\n"
-            "3. Translate user technical advice clearly and concisely."
-        )
+        # Select prompt based on target language for better local model alignment
+        if target_lang.lower() == "ru":
+            system_prompt = (
+                "Ты — профессиональный технический переводчик.\n"
+                "Переведи предоставленный текст на русский язык.\n"
+                "Правила:\n"
+                "1. Выведи ТОЛЬКО переведенный текст. Никаких примечаний, вступлений, пояснений или markdown-оформления (кроме оригинального).\n"
+                "2. Сохраняй неизменными технические коды ошибок (например, C-2201), названия деталей и оригинальное форматирование."
+            )
+        else:
+            lang_names_en = {
+                "en": "English",
+                "de": "German",
+                "fr": "French",
+                "es": "Spanish",
+                "it": "Italian",
+                "ja": "Japanese",
+                "zh": "Chinese",
+                "ko": "Korean",
+                "tr": "Turkish"
+            }
+            lang_name = lang_names_en.get(target_lang.lower(), target_lang)
+            system_prompt = (
+                "You are a professional technical translator.\n"
+                f"Translate the provided text into the target language: {lang_name}.\n"
+                "Strict rules:\n"
+                "1. Output ONLY the translated text. Do not add comments, greetings, explanations, or extra markdown formatting.\n"
+                "2. Preserve original formatting, line breaks, and technical codes (like C-2201) exactly."
+            )
         
         payload = {
             "model": model_name,

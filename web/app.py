@@ -263,7 +263,9 @@ async def translate_chunk(request: Request):
     if not text:
         raise HTTPException(status_code=400, detail="Текст для перевода пуст")
         
+    print(f"[*] Requesting translation of chunk to: {target_lang}")
     translated = llm_client.translate_text(text, target_lang)
+    print(f"[*] LLM returned translation length: {len(translated)}")
     return {"translated": translated}
 
 @app.post("/settings")
