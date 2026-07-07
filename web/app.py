@@ -132,7 +132,9 @@ async def read_root(request: Request):
     has_archive = False
     if os.path.exists(archive_path):
         try:
-            subdirs = [d for d in os.listdir(archive_path) if os.path.isdir(os.path.join(archive_path, d))]
+            # Only count actual forum subdirectories, ignore 'official' (manuals)
+            forum_sources = {"tradeprint", "copytechnet", "printplanet", "colorprinting"}
+            subdirs = [d for d in os.listdir(archive_path) if os.path.isdir(os.path.join(archive_path, d)) and d.lower() in forum_sources]
             if len(subdirs) > 0:
                 has_archive = True
         except Exception:
