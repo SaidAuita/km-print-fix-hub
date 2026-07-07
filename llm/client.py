@@ -194,15 +194,11 @@ class LLMClient:
         model_name = self._get_loaded_model_name()
         
         # Select prompt based on target language for better local model alignment
-        # We merge instructions and content into a single user message because small models
-        # (like Qwen 4b) follow instructions in user prompts much better than in system prompts.
         if target_lang.lower() == "ru":
             prompt_content = (
-                "Ты — профессиональный технический переводчик.\n"
-                "Переведи предоставленный ниже текст на русский язык.\n"
-                "Правила:\n"
-                "1. Выведи ТОЛЬКО переведенный текст. Никаких примечаний, вступлений, пояснений или markdown-оформления (кроме оригинального).\n"
-                "2. Сохраняй неизменными технические коды ошибок (например, C-2201), названия деталей и оригинальное форматирование.\n\n"
+                "Инструкция: Переведи следующий текст на русский язык.\n"
+                "Выведи исключительно готовый переведенный текст. Не добавляй никаких пояснений, примечаний, введений или лишней разметки.\n"
+                "Сохраняй структуру текста, имена авторов и коды ошибок (например, C-2201) в исходном виде.\n\n"
                 f"Текст для перевода:\n{text}"
             )
         else:
@@ -219,11 +215,9 @@ class LLMClient:
             }
             lang_name = lang_names_en.get(target_lang.lower(), target_lang)
             prompt_content = (
-                "You are a professional technical translator.\n"
-                f"Translate the provided text below into the target language: {lang_name}.\n"
-                "Strict rules:\n"
-                "1. Output ONLY the translated text. Do not add comments, greetings, explanations, or extra markdown formatting.\n"
-                "2. Preserve original formatting, line breaks, and technical codes (like C-2201) exactly.\n\n"
+                f"Instruction: Translate the following text into {lang_name}.\n"
+                "Output ONLY the final translation. Do not add any notes, explanations, introductions, or markdown decorations.\n"
+                "Preserve technical codes (like C-2201) and formatting exactly as is.\n\n"
                 f"Text to translate:\n{text}"
             )
         
