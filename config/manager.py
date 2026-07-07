@@ -231,6 +231,7 @@ class ConfigManager:
             "LAST_SHOW_REASONING": False,
             "LAST_DEBUG_MODE": False,
             "LAST_ENABLE_CONTEXT_OPTIMIZER": False,
+            "LAST_DIRECT_FORUM_LINKS": False,
             "LAST_LANG": getattr(config, 'LAST_LANG', 'ru'),
         }
         self.settings = {}

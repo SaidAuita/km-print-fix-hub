@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="/static/style.css">
     <script>
         window.IS_BUILD = {{ is_build | tojson }};
+        window.DIRECT_FORUM_LINKS = {{ settings.LAST_DIRECT_FORUM_LINKS | tojson }};
         window.TRANSLATIONS = {
             confirm_clear: "{{ t.confirm_clear | escape }}",
             confirm_delete: "{{ t.confirm_delete | escape }}",
@@ -439,6 +440,10 @@
                     <label class="flex items-center gap-2 cursor-pointer select-none">
                         <input type="checkbox" id="contextOptimizerCheckModal" {% if settings.LAST_ENABLE_CONTEXT_OPTIMIZER %}checked{% endif %} class="rounded border-gray-700 bg-gray-800 text-brand-500 focus:ring-brand-500 w-4 h-4">
                         <span class="text-xs text-gray-400 font-semibold">{{ t.enable_context_optimizer }}</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" id="directForumLinksCheckModal" {% if settings.LAST_DIRECT_FORUM_LINKS %}checked{% endif %} class="rounded border-gray-700 bg-gray-800 text-brand-500 focus:ring-brand-500 w-4 h-4">
+                        <span class="text-xs text-gray-400 font-semibold">{{ t.direct_forum_links }}</span>
                     </label>
                 </div>
 

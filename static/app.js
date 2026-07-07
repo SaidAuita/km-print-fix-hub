@@ -39,7 +39,12 @@ function formatResponseText(text) {
 function openChunkDetailsBySourceIndex(idx) {
     const src = currentSources.find(s => s.idx == idx);
     if (src) {
-        openChunkDetails(src.id);
+        const isOfficial = src.metadata && src.metadata.source === "official";
+        if (window.DIRECT_FORUM_LINKS && !isOfficial && window.IS_BUILD) {
+            window.open(src.url, '_blank');
+        } else {
+            openChunkDetails(src.id);
+        }
     } else {
         console.warn("Источник с индексом не найден: ", idx);
     }
@@ -311,7 +316,8 @@ function renderSources(sources) {
             : `<span>${posts}</span>`;
             
         const modelLabel = src.model ? `[${src.model}] ` : "";
-        const clickHandler = window.IS_BUILD ? `window.open('${src.url}', '_blank')` : `openChunkDetails('${src.id}')`;
+        const useDirect = (window.DIRECT_FORUM_LINKS && !isOfficial && window.IS_BUILD);
+        const clickHandler = useDirect ? `window.open('${src.url}', '_blank')` : `openChunkDetails('${src.id}')`;
         container.innerHTML += `
             <div onclick="${clickHandler}" class="p-3 rounded-xl bg-[#142036] border border-[#1e293b] hover:border-brand-500/50 hover:bg-[#1b2b47] transition-all cursor-pointer flex flex-col gap-1.5 shadow-md">
                 <div class="flex items-start justify-between gap-2">
@@ -536,6 +542,7 @@ async function saveSettings(e) {
     settings["LAST_SHOW_REASONING"] = document.getElementById("showReasoningCheckModal").checked;
     settings["LAST_STRICT_MODE"] = document.getElementById("strictModeCheckModal").checked;
     settings["LAST_ENABLE_CONTEXT_OPTIMIZER"] = document.getElementById("contextOptimizerCheckModal").checked;
+    settings["LAST_DIRECT_FORUM_LINKS"] = document.getElementById("directForumLinksCheckModal").checked;
 
     try {
         const response = await fetch("/settings", {
