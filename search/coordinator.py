@@ -33,6 +33,24 @@ class SearchCoordinator:
         """
         Сканирует заголовок и текст чанка для автоматического определения модели KM.
         """
+        models = self._detect_all_models(doc)
+        if models:
+            return models[0]
+        return "KM-General"
+
+    def _detect_all_models(self, doc):
+        """
+        Возвращает список всех моделей KM, ассоциированных с документом.
+        Использует метаданные 'machine' или сканирует текст, если метаданные отсутствуют.
+        """
+        metadata = doc.get("metadata", {})
+        machines = metadata.get("machine", [])
+        if machines:
+            if isinstance(machines, list):
+                return [m.upper() for m in machines]
+            elif isinstance(machines, str):
+                return [machines.upper()]
+
         title = doc.get("thread_title", "")
         text = doc.get("text", "")
         combined = (title + " " + text).lower().replace('с', 'c') # Замена русской 'с' на латинскую 'c'
@@ -51,12 +69,13 @@ class SearchCoordinator:
         # Сортируем по длине строки по убыванию, чтобы избежать частичных совпадений
         models_to_check = sorted(list(set(models_to_check)), key=len, reverse=True)
         
+        found = []
         for m in models_to_check:
             pattern = r'\b' + re.escape(m) + r'\b'
             if re.search(pattern, combined):
-                return m.upper()
-                    
-        return "KM-General"
+                found.append(m.upper())
+                
+        return found if found else ["KM-GENERAL"]
 
     def _translate_to_target(self, query_text, target_lang):
         try:
@@ -171,7 +190,24 @@ class SearchCoordinator:
             if search_mode == "only":
                 allowed_models = [model]
             elif search_mode == "related":
-                allowed_models = [model] + self.related_models.get(model, [])
+                model_key = model.upper()
+                related = self.related_models.get(model_key)
+                if not related and model_key.startswith('C'):
+                    related = self.related_models.get(model_key[1:])
+                if not related:
+                    related = []
+                
+                # Расширяем список разрешенных моделей с префиксом 'C' и без него
+                raw_list = [model] + related
+                expanded = []
+                for m in raw_list:
+                    m_clean = m.strip()
+                    expanded.append(m_clean)
+                    if m_clean.upper().startswith('C'):
+                        expanded.append(m_clean[1:])
+                    else:
+                        expanded.append('C' + m_clean)
+                allowed_models = list(set(expanded))
 
         # Получаем английский и русский варианты запроса для поиска по разноязычным базам
         en_query = query_text
@@ -221,9 +257,9 @@ class SearchCoordinator:
             
             filtered_vector = []
             for doc, score in vector_candidates:
-                # Определяем модель
-                doc_model = self._detect_model(doc)
-                doc["model"] = doc_model
+                # Определяем все подходящие модели
+                doc_models = self._detect_all_models(doc)
+                doc["model"] = doc_models[0] if doc_models else "KM-General"
                 
                 # Фильтруем по источнику
                 doc_source = doc.get("metadata", {}).get("source", "tradeprint")
@@ -234,8 +270,8 @@ class SearchCoordinator:
                 
                 # Фильтруем по моделям, если задано
                 if allowed_models:
-                    if doc_model != "KM-General":
-                        match = any(m.lower() == doc_model.lower() for m in allowed_models)
+                    if doc_models != ["KM-GENERAL"]:
+                        match = any(m.lower() in [dm.lower() for dm in doc_models] for m in allowed_models)
                     else:
                         combined = (doc["thread_title"] + " " + doc["text"]).lower().replace('с', 'c')
                         match = any(m.lower() in combined for m in allowed_models)
@@ -303,7 +339,6 @@ class SearchCoordinator:
             
         for doc, score in reranked:
             doc_id = doc["id"]
-            doc_model = doc.get("model", "KM-General")
             
             # Семантическое сходство приводим к [0, 1]
             if is_mock:
@@ -314,17 +349,30 @@ class SearchCoordinator:
                 vector_val = score
                 semantic_val = 0.4 * fts_val + 0.6 * vector_val
             
+            model_score = 0.0
             if model != "all":
-                if doc_model.lower() == model.lower():
+                doc_models = self._detect_all_models(doc)
+                
+                # Check strict match
+                if any(m.lower() == model.lower() for m in doc_models):
                     model_score = 1.0
-                elif allowed_models and any(m.lower() == doc_model.lower() for m in allowed_models):
+                    doc["model"] = model.upper()
+                # Check related match
+                elif allowed_models and any(m.lower() in [dm.lower() for dm in doc_models] for m in allowed_models):
                     model_score = 0.7
-                elif doc_model == "KM-General":
+                    matched_related = [m for m in allowed_models if m.lower() in [dm.lower() for dm in doc_models]]
+                    if matched_related:
+                        doc["model"] = matched_related[0].upper()
+                # Check general
+                elif "KM-GENERAL" in doc_models:
                     model_score = 0.0
+                    doc["model"] = "KM-General"
                 else:
                     model_score = -1.0  # Неродственная модель (шум)
             else:
                 model_score = 0.0
+                doc_models = self._detect_all_models(doc)
+                doc["model"] = doc_models[0] if doc_models else "KM-General"
                 
             # Приоритет официальной документации (Official Bonus)
             doc_source = doc.get("metadata", {}).get("source", "tradeprint")
