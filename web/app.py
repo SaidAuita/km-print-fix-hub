@@ -21,7 +21,7 @@ from search.coordinator import SearchCoordinator
 from llm.client import LLMClient
 from history.manager import HistoryManager
 
-app = FastAPI(title="KM Print Fix Hub v 1.00 (2026-07-07)")
+app = FastAPI(title="KM Print Fix Hub v 1.00 (2026-07-08)")
 
 # Настройка путей
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -98,15 +98,7 @@ translations = load_translations()
 # Инициализация менеджеров
 config_mgr = ConfigManager()
 
-# Автоматическое обновление индекса PDF при изменении файлов в папке Service_manuals
-try:
-    from index_pdfs import check_pdf_changes, run_pdf_update
-    is_anon_build = os.path.exists(os.path.join(BASE_DIR, "Index_anon")) or "Index_anon" in config_mgr.get("INDEX_DIR", "")
-    if check_pdf_changes():
-        print("[*] Обнаружены изменения в PDF-руководствах. Запуск автоматического обновления индекса...")
-        run_pdf_update(anonymize=is_anon_build)
-except Exception as e:
-    print(f"[!] Ошибка автоматической переиндексации PDF: {e}")
+
 
 search_coordinator = SearchCoordinator()
 llm_client = LLMClient()

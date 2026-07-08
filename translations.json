@@ -2,7 +2,7 @@
   "ru": {
     "lang_code": "ru",
     "lang_name": "Русский",
-    "title": "KM Print Fix Hub v 1.00 (2026-07-07)",
+    "title": "KM Print Fix Hub v 1.00 (2026-07-08)",
     "active_model": "Модель",
     "knowledge_base": "База знаний",
     "search_diagnostics": "Диагностика поиска (Debug)",
@@ -72,12 +72,19 @@
     "pdfs_modal_desc": "Следующие официальные сервис-мануалы и инструкции загружены в векторную базу данных и используются для поиска:",
     "pdfs_modal_empty": "Официальные PDF-руководства не найдены.",
     "enable_context_optimizer": "Оптимизатор контекста LLM (сокращение токенов)",
-    "direct_forum_links": "Открывать ссылки на форумы напрямую (без просмотра чанка)"
+    "direct_forum_links": "Открывать ссылки на форумы напрямую (без просмотра чанка)",
+    "about_author_btn": "Об авторе",
+    "about_author_btn_title": "Информация о разработчике и поддержка проекта",
+    "about_author_title": "Об авторе и проекте",
+    "about_support_title": "Support the Project / Поддержка проекта",
+    "about_support_text": "Если проект оказался вам полезен, вы можете поддержать его разработку:",
+    "about_other_projects": "🛠️ Другие проекты / My other projects",
+    "about_plugin_desc": "Мощный плагин для Photoshop на базе ComfyUI, обеспечивающий прямую интеграцию с локальными генеративными моделями без облаков, подписок и регулярных платежей."
   },
   "en": {
     "lang_code": "en",
     "lang_name": "English",
-    "title": "KM Print Fix Hub v 1.00 (2026-07-07)",
+    "title": "KM Print Fix Hub v 1.00 (2026-07-08)",
     "active_model": "Model",
     "knowledge_base": "Knowledge Base",
     "search_diagnostics": "Search Diagnostics (Debug)",
@@ -147,12 +154,19 @@
     "pdfs_modal_desc": "The following official service manuals and guides are indexed in the vector database and used to answer your queries:",
     "pdfs_modal_empty": "No official PDF manuals found.",
     "enable_context_optimizer": "LLM Context Optimizer (token reduction)",
-    "direct_forum_links": "Open forum links directly (skip chunk preview)"
+    "direct_forum_links": "Open forum links directly (skip chunk preview)",
+    "about_author_btn": "About",
+    "about_author_btn_title": "Developer info and project support",
+    "about_author_title": "About the Author & Project",
+    "about_support_title": "Support the Project",
+    "about_support_text": "If you find this project useful, you can support its development:",
+    "about_other_projects": "🛠️ Other Projects",
+    "about_plugin_desc": "A powerful Photoshop plugin powered by ComfyUI, providing direct integration with local generative models without any clouds, subscriptions, or recurring fees."
   },
   "de": {
     "lang_code": "de",
     "lang_name": "Deutsch",
-    "title": "KM Print Fix Hub v 1.00 (2026-07-07)",
+    "title": "KM Print Fix Hub v 1.00 (2026-07-08)",
     "active_model": "Modell",
     "knowledge_base": "Wissensdatenbank",
     "search_diagnostics": "Suchdiagnose (Debug)",
@@ -222,12 +236,19 @@
     "pdfs_modal_desc": "Die folgenden offiziellen Servicehandbücher und Anleitungen sind in der Vektordatenbank indiziert und werden zur Beantwortung Ihrer Fragen verwendet:",
     "pdfs_modal_empty": "Keine offiziellen PDF-Handbücher gefunden.",
     "enable_context_optimizer": "LLM Kontext-Optimierer (Token-Reduzierung)",
-    "direct_forum_links": "Forum-Links direkt öffnen (Auszugsvorschau überspringen)"
+    "direct_forum_links": "Forum-Links direkt öffnen (Auszugsvorschau überspringen)",
+    "about_author_btn": "Über den Autor",
+    "about_author_btn_title": "Entwicklerinfo und Projektunterstützung",
+    "about_author_title": "Über den Autor & das Projekt",
+    "about_support_title": "Projekt unterstützen",
+    "about_support_text": "Wenn Sie dieses Projekt nützlich finden, können Sie seine Entwicklung unterstützen:",
+    "about_other_projects": "🛠️ Andere Projekte",
+    "about_plugin_desc": "Ein leistungsstarkes Photoshop-Plugin powered by ComfyUI, das eine direkte Integration lokaler generativer Modelle ermöglicht, ohne Clouds, Abonnements oder wiederkehrende Gebühren."
   },
   "fr": {
     "lang_code": "fr",
     "lang_name": "Français",
-    "title": "KM Print Fix Hub v 1.00 (2026-07-07)",
+    "title": "KM Print Fix Hub v 1.00 (2026-07-08)",
     "active_model": "Modèle",
     "knowledge_base": "Base de connaissances",
     "search_diagnostics": "Diagnostic de recherche (Debug)",
@@ -297,12 +318,19 @@
     "pdfs_modal_desc": "Les manuels d'entretien et guides officiels suivants sont indexés dans la base de données vectorielle et utilisés pour répondre à vos questions:",
     "pdfs_modal_empty": "Aucun manuel PDF officiel trouvé.",
     "enable_context_optimizer": "Optimiseur de contexte LLM (réduction de jetons)",
-    "direct_forum_links": "Ouvrir les liens du forum directement (passer l'aperçu)"
+    "direct_forum_links": "Ouvrir les liens du forum directement (passer l'aperçu)",
+    "about_author_btn": "À propos",
+    "about_author_btn_title": "Informations sur le développeur et support du projet",
+    "about_author_title": "À propos de l'auteur et du projet",
+    "about_support_title": "Soutenir le projet",
+    "about_support_text": "Si vous trouvez ce projet utile, vous pouvez soutenir son développement :",
+    "about_other_projects": "🛠️ Autres projets",
+    "about_plugin_desc": "Un plugin Photoshop puissant basé sur ComfyUI, offrant une intégration directe avec les modèles génératifs locaux sans cloud, abonnement ni frais récurrents."
   },
   "es": {
     "lang_code": "es",
     "lang_name": "Español",
-    "title": "KM Print Fix Hub v 1.00 (2026-07-07)",
+    "title": "KM Print Fix Hub v 1.00 (2026-07-08)",
     "active_model": "Modelo",
     "knowledge_base": "Base de conocimientos",
     "search_diagnostics": "Diagnóstico de búsqueda (Debug)",
@@ -372,12 +400,19 @@
     "pdfs_modal_desc": "Los siguientes manuales de servicio y guías oficiales están indexados en la base de datos vectorial y se utilizan para responder a sus consultas:",
     "pdfs_modal_empty": "No se encontraron manuales PDF oficiales.",
     "enable_context_optimizer": "Optimizador de contexto LLM (reducción de tokens)",
-    "direct_forum_links": "Abrir enlaces del foro directamente (omitir vista previa)"
+    "direct_forum_links": "Abrir enlaces del foro directamente (omitir vista previa)",
+    "about_author_btn": "Sobre el autor",
+    "about_author_btn_title": "Información del desarrollador y apoyo al proyecto",
+    "about_author_title": "Sobre el autor y el proyecto",
+    "about_support_title": "Apoyar el proyecto",
+    "about_support_text": "Si encuentra útil este proyecto, puede apoyar su desarrollo:",
+    "about_other_projects": "🛠️ Otros proyectos",
+    "about_plugin_desc": "Un potente complemento de Photoshop impulsado por ComfyUI, que proporciona integración directa con modelos generativos locales sin nubes, suscripciones ni tarifas recurrentes."
   },
   "it": {
     "lang_code": "it",
     "lang_name": "Italiano",
-    "title": "KM Print Fix Hub v 1.00 (2026-07-07)",
+    "title": "KM Print Fix Hub v 1.00 (2026-07-08)",
     "active_model": "Modello",
     "knowledge_base": "Knowledge Base",
     "search_diagnostics": "Diagnostica di ricerca (Debug)",
@@ -447,12 +482,19 @@
     "pdfs_modal_desc": "I seguenti manuali di servizio e guide ufficiali sono indicizzati nel database vettoriale e utilizzati per rispondere alle vostre domande:",
     "pdfs_modal_empty": "Nessun manuale PDF ufficiale trovato.",
     "enable_context_optimizer": "Ottimizzatore di contesto LLM (riduzione dei token)",
-    "direct_forum_links": "Apri direttamente i link del forum (salta l'anteprima)"
+    "direct_forum_links": "Apri direttamente i link del forum (salta l'anteprima)",
+    "about_author_btn": "Informazioni",
+    "about_author_btn_title": "Informazioni sullo sviluppatore e supporto al progetto",
+    "about_author_title": "Informazioni sull'autore e sul progetto",
+    "about_support_title": "Supporta il progetto",
+    "about_support_text": "Se trovi utile questo progetto, puoi supportarne lo sviluppo:",
+    "about_other_projects": "🛠️ Altri progetti",
+    "about_plugin_desc": "Un potente plug-in di Photoshop alimentato da ComfyUI, che fornisce l'integrazione diretta con modelli generativi locali senza cloud, abbonamenti o costi ricorrenti."
   },
   "zh": {
     "lang_code": "zh",
     "lang_name": "中文",
-    "title": "KM Print Fix Hub v 1.00 (2026-07-07)",
+    "title": "KM Print Fix Hub v 1.00 (2026-07-08)",
     "active_model": "型号",
     "knowledge_base": "知识库",
     "search_diagnostics": "搜索诊断 (Debug)",
@@ -522,12 +564,19 @@
     "pdfs_modal_desc": "以下官方服务手册和指南已索引到向量数据库中，并用于回答您的查询:",
     "pdfs_modal_empty": "未找到官方PDF手册。",
     "enable_context_optimizer": "LLM 上下文优化器 (减少 Token)",
-    "direct_forum_links": "直接打开论坛链接（跳过预览）"
+    "direct_forum_links": "直接打开论坛链接（跳过预览）",
+    "about_author_btn": "关于作者",
+    "about_author_btn_title": "微信开发者信息与项目支持",
+    "about_author_title": "关于作者与项目",
+    "about_support_title": "支持该项目",
+    "about_support_text": "如果您觉得这个项目有用，可以支持其开发：",
+    "about_other_projects": "🛠️ 其他项目",
+    "about_plugin_desc": "基于 ComfyUI 的强大 Photoshop 插件，可与本地生成模型直接集成，无需云服务、订阅或循环费用。"
   },
   "ja": {
     "lang_code": "ja",
     "lang_name": "日本語",
-    "title": "KM Print Fix Hub v 1.00 (2026-07-07)",
+    "title": "KM Print Fix Hub v 1.00 (2026-07-08)",
     "active_model": "モデル",
     "knowledge_base": "ナレッジベース",
     "search_diagnostics": "検索診断 (デバッグ)",
@@ -597,12 +646,19 @@
     "pdfs_modal_desc": "以下の公式サービスマニュアルおよびガイドがベクトルデータベースにインデックスされ、質問への回答に使用されています:",
     "pdfs_modal_empty": "公式PDFマニュアルが見つかりません。",
     "enable_context_optimizer": "LLM コンテキスト最適化器 (トークン削減)",
-    "direct_forum_links": "フォーラムのリンクを直接開く（プレビューをスキップ）"
+    "direct_forum_links": "フォーラムのリンクを直接開く（プレビューをスキップ）",
+    "about_author_btn": "著者について",
+    "about_author_btn_title": "開発者情報とプロジェクトのサポート",
+    "about_author_title": "著者とプロジェクトについて",
+    "about_support_title": "プロジェクトのサポート",
+    "about_support_text": "このプロジェクトが役に立った場合は、開発をサポートできます。",
+    "about_other_projects": "🛠️ その他のプロジェクト",
+    "about_plugin_desc": "ComfyUIを搭載した強力なPhotoshopプラグイン。クラウド、サブスクリプション、定期料金なしで、ローカル生成モデルとの直接統合を提供します。ConfyUIプラグインをご利用ください。"
   },
   "pt": {
     "lang_code": "pt",
     "lang_name": "Português",
-    "title": "KM Print Fix Hub v 1.00 (2026-07-07)",
+    "title": "KM Print Fix Hub v 1.00 (2026-07-08)",
     "active_model": "Modelo",
     "knowledge_base": "Base de Conhecimento",
     "search_diagnostics": "Diagnóstico de Busca (Debug)",
@@ -667,7 +723,7 @@
   "tr": {
     "lang_code": "tr",
     "lang_name": "Türkçe",
-    "title": "KM Print Fix Hub v 1.00 (2026-07-07)",
+    "title": "KM Print Fix Hub v 1.00 (2026-07-08)",
     "active_model": "Model",
     "knowledge_base": "Bilgi Bankası",
     "search_diagnostics": "Arama Teşhisi (Debug)",
@@ -737,6 +793,13 @@
     "pdfs_modal_desc": "Aşağıdaki resmi servis kılavuzları ve rehberler vektör veritabanında indekslenmiştir ve sorularınızı yanıtlamak için kullanılır:",
     "pdfs_modal_empty": "Resmi PDF kılavuzu bulunamadı.",
     "enable_context_optimizer": "LLM Bağlam Optimize Edici (token azaltma)",
-    "direct_forum_links": "Forum bağlantılarını doğrudan aç (önizlemeyi atla)"
+    "direct_forum_links": "Forum bağlantılarını doğrudan aç (önizlemeyi atla)",
+    "about_author_btn": "Hakkında",
+    "about_author_btn_title": "Geliştirici bilgisi ve proje desteği",
+    "about_author_title": "Geliştirici ve Proje Hakkında",
+    "about_support_title": "Projeyi Destekleyin",
+    "about_support_text": "Bu projeyi faydalı buluyorsanız gelişimini destekleyebilirsiniz:",
+    "about_other_projects": "🛠️ Diğer Projeler",
+    "about_plugin_desc": "ComfyUI tabanlı güçlü bir Photoshop eklentisi. Bulut, abonelik veya tekrarlayan ücretler olmadan yerel üretici modellerle doğrudan entegrasyon sağlar."
   }
 }

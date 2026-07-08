@@ -11,7 +11,12 @@ import argparse
 import sqlite3
 import numpy as np
 import datetime
-from tqdm import tqdm
+import shutil
+
+try:
+    from tqdm import tqdm
+except ImportError:
+    tqdm = None
 
 import config
 from preprocessing.importer import PDFImporter
@@ -20,38 +25,57 @@ from vector_store.factory import get_vector_store
 
 def check_pdf_changes():
     """
-    Checks if PDF files in Service_manuals differ from those in Archive/official.
-    Returns True if there are any differences (addition, deletion, size change).
+    Checks if there are any new PDFs in Service_manuals (which need to be moved and indexed),
+    or if any PDFs in Archive/official were deleted/modified compared to the database.
     """
     manuals_dir = "Service_manuals"
     archive_dir = config.ARCHIVE_DIR
     official_dir = os.path.join(archive_dir, "official")
     
-    if not os.path.exists(manuals_dir):
-        os.makedirs(manuals_dir, exist_ok=True)
+    # 1. Check if there are any new PDFs in Service_manuals
+    if os.path.exists(manuals_dir):
+        for f in os.listdir(manuals_dir):
+            if f.lower().endswith(".pdf"):
+                return True # New files to process
+                
+    # 2. Check if files in Archive/official differ from what is in the database
+    is_anon_build = os.path.exists("Index_anon") and not os.path.exists("Index")
+    index_dir = "Index_anon" if is_anon_build else config.INDEX_DIR
+    db_path = os.path.join(index_dir, "knowledge_base.db")
+    
+    if not os.path.exists(db_path):
+        return True
         
-    src_pdfs = {}
-    for f in os.listdir(manuals_dir):
-        if f.lower().endswith(".pdf"):
-            p = os.path.join(manuals_dir, f)
+    db_pdfs = set()
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT DISTINCT metadata_json FROM chunks WHERE source = 'official'")
+        for row in cursor.fetchall():
             try:
-                src_pdfs[f] = os.path.getsize(p)
+                meta = json.loads(row[0])
+                if "document" in meta:
+                    db_pdfs.add(meta["document"])
             except Exception:
                 pass
-            
-    dst_pdfs = {}
+        conn.close()
+    except Exception:
+        pass
+        
+    current_official_pdfs = set()
     if os.path.exists(official_dir):
         for f in os.listdir(official_dir):
             if f.lower().endswith(".pdf"):
-                p = os.path.join(official_dir, f)
-                try:
-                    dst_pdfs[f] = os.path.getsize(p)
-                except Exception:
-                    pass
+                current_official_pdfs.add(f)
                 
-    return src_pdfs != dst_pdfs
+    return db_pdfs != current_official_pdfs
 
 def run_pdf_update(anonymize=False, provider=None, store=None):
+    # Auto-detect anonymization directory in development workspace
+    if not anonymize:
+        if os.path.exists("Index_anon") and not os.path.exists("Index"):
+            anonymize = True
+
     index_dir = "Index_anon" if anonymize else config.INDEX_DIR
     archive_dir = config.ARCHIVE_DIR
     db_path = os.path.join(index_dir, "knowledge_base.db")
@@ -66,9 +90,8 @@ def run_pdf_update(anonymize=False, provider=None, store=None):
     # 1. Ensure target directory exists
     os.makedirs(index_dir, exist_ok=True)
 
-    # 2. Check if SQLite DB exists, if not we will initialize a new clean one
+    # 2. Open or create SQLite DB
     db_existed = os.path.exists(db_path)
-    
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -95,50 +118,64 @@ def run_pdf_update(anonymize=False, provider=None, store=None):
     """)
     conn.commit()
 
-    # 3. Clean all old PDF chunks from the database
+    # 3. Read list of PDFs currently registered in DB
+    db_pdfs = set()
     if db_existed:
-        print("[*] Removing old PDF documents from the index...")
-        cursor.execute("DELETE FROM fts_chunks WHERE chunk_id IN (SELECT chunk_id FROM chunks WHERE source = 'official')")
-        cursor.execute("DELETE FROM chunks WHERE source = 'official'")
-        conn.commit()
+        cursor.execute("SELECT DISTINCT metadata_json FROM chunks WHERE source = 'official'")
+        for row in cursor.fetchall():
+            try:
+                meta = json.loads(row[0])
+                if "document" in meta:
+                    db_pdfs.add(meta["document"])
+            except Exception:
+                pass
 
-    # 4. Copy PDF manuals from Service_manuals to Archive/official
+    # 4. Move new PDF manuals from Service_manuals to Archive/official
+    manuals_dir = "Service_manuals"
     official_dir = os.path.join(archive_dir, "official")
     os.makedirs(official_dir, exist_ok=True)
+    os.makedirs(manuals_dir, exist_ok=True)
 
-    manuals_dir = "Service_manuals"
-    
-    # We clean target Archive/official PDFs if they no longer exist in Service_manuals
-    # so that missing files disappear completely!
-    current_source_pdfs = set()
-    if os.path.exists(manuals_dir):
-        for f in os.listdir(manuals_dir):
-            if f.lower().endswith(".pdf"):
-                current_source_pdfs.add(f)
-
-    # Remove PDFs from Archive/official that are no longer in Service_manuals
-    for f in os.listdir(official_dir):
-        if f.lower().endswith(".pdf") and f not in current_source_pdfs:
-            print(f"[-] Removing deleted PDF file: {f}")
+    new_files_moved = False
+    for f in os.listdir(manuals_dir):
+        if f.lower().endswith(".pdf"):
+            src_file = os.path.join(manuals_dir, f)
+            dst_file = os.path.join(official_dir, f)
+            print(f"[+] Moving new manual: {f} -> Archive/official/")
             try:
-                os.remove(os.path.join(official_dir, f))
+                # Move the file (overwrites if destination already exists)
+                if os.path.exists(dst_file):
+                    os.remove(dst_file)
+                shutil.move(src_file, dst_file)
+                new_files_moved = True
             except Exception as e:
-                print(f"[!] Warning: failed to delete {f}: {e}")
+                print(f"[!] Error moving file {f}: {e}")
 
-    # Copy files
-    if os.path.exists(manuals_dir):
-        import shutil
-        for f in os.listdir(manuals_dir):
-            if f.lower().endswith(".pdf"):
-                src_file = os.path.join(manuals_dir, f)
-                dst_file = os.path.join(official_dir, f)
-                if not os.path.exists(dst_file) or os.path.getsize(src_file) != os.path.getsize(dst_file):
-                    print(f"[*] Copying {f} to {official_dir}...")
-                    shutil.copy2(src_file, dst_file)
+    # 5. Check what PDFs are currently in Archive/official
+    current_official_pdfs = set()
+    for f in os.listdir(official_dir):
+        if f.lower().endswith(".pdf"):
+            current_official_pdfs.add(f)
 
-    # 5. Extract chunks for current PDF manuals
+    # 6. Check if anything changed (moved new files, or files deleted in Archive/official)
+    changed = new_files_moved or (db_pdfs != current_official_pdfs)
+
+    if not changed:
+        print("[*] No changes detected. PDF index is up to date.")
+        conn.close()
+        return
+
+    print("[*] Rebuilding PDF index due to manual list changes...")
+
+    # Clear old PDF chunks from the database
+    print("[*] Clearing old PDF entries from database...")
+    cursor.execute("DELETE FROM fts_chunks WHERE chunk_id IN (SELECT chunk_id FROM chunks WHERE source = 'official')")
+    cursor.execute("DELETE FROM chunks WHERE source = 'official'")
+    conn.commit()
+
+    # 7. Extract chunks for current official PDF manuals
     new_pdf_chunks = []
-    if os.path.exists(official_dir) and any(f.lower().endswith(".pdf") for f in os.listdir(official_dir)):
+    if current_official_pdfs:
         print(f"[*] Extracting text from PDF manuals in {official_dir}...")
         pdf_importer = PDFImporter(
             manuals_dir=official_dir,
@@ -147,9 +184,9 @@ def run_pdf_update(anonymize=False, provider=None, store=None):
         )
         new_pdf_chunks = pdf_importer.import_documents()
     else:
-        print("[*] No PDF manuals found in Service_manuals. Index will not contain official PDFs.")
+        print("[*] No PDF manuals found in Archive/official.")
 
-    # 6. Generate embeddings for the new PDF chunks
+    # 8. Generate embeddings for the new PDF chunks
     new_pdf_embeddings = []
     if new_pdf_chunks:
         print(f"[*] Initializing embedding provider...")
@@ -157,10 +194,18 @@ def run_pdf_update(anonymize=False, provider=None, store=None):
         print(f"Embeddings Provider: {embeddings_provider.__class__.__name__}")
         
         batch_size = 50
-        print(f"[*] Computing embeddings for {len(new_pdf_chunks)} new PDF chunks...")
+        num_chunks = len(new_pdf_chunks)
+        print(f"[*] Computing embeddings for {num_chunks} PDF chunks...")
         chunk_texts = [c['text'] for c in new_pdf_chunks]
         
-        for i in tqdm(range(0, len(new_pdf_chunks), batch_size), desc="PDF Embeddings"):
+        if tqdm:
+            page_iter = tqdm(range(0, num_chunks, batch_size), desc="PDF Embeddings", unit="batch")
+        else:
+            page_iter = range(0, num_chunks, batch_size)
+            
+        for i in page_iter:
+            if not tqdm and i > 0:
+                print(f"     Embedding chunk {i}/{num_chunks}...")
             batch_texts = chunk_texts[i:i+batch_size]
             try:
                 batch_embs = embeddings_provider.embed_documents(batch_texts)
@@ -174,7 +219,7 @@ def run_pdf_update(anonymize=False, provider=None, store=None):
                 new_pdf_embeddings.extend(batch_embs)
 
         # Write new PDF chunks to SQLite
-        print("[*] Writing new PDF chunks to SQLite base...")
+        print("[*] Writing PDF chunks to SQLite base...")
         chunks_data = []
         fts_data = []
         for chunk, emb in zip(new_pdf_chunks, new_pdf_embeddings):
@@ -196,7 +241,7 @@ def run_pdf_update(anonymize=False, provider=None, store=None):
         cursor.executemany("INSERT INTO fts_chunks VALUES (?, ?, ?)", fts_data)
         conn.commit()
 
-    # 7. Retrieve ALL chunks (forums + PDFs) from SQLite to rebuild vector store
+    # 9. Retrieve ALL chunks (forums + PDFs) from SQLite to rebuild vector store
     print("[*] Loading all chunks from SQLite to build vector store...")
     cursor.execute("SELECT chunk_id, thread_id, thread_title, url, chunk_index, text, metadata_json, embedding, source FROM chunks")
     rows = cursor.fetchall()
@@ -222,7 +267,7 @@ def run_pdf_update(anonymize=False, provider=None, store=None):
 
     conn.close()
 
-    # 8. Rebuild FAISS index
+    # 10. Rebuild FAISS index
     if all_reconstructed_chunks:
         print(f"[*] Rebuilding FAISS vector store index with {len(all_reconstructed_chunks)} items...")
         vector_store = get_vector_store(store_type=store)
@@ -232,7 +277,7 @@ def run_pdf_update(anonymize=False, provider=None, store=None):
     else:
         print("[!] No documents to index. Index is empty.")
 
-    # 9. Update last sync dates (sync_dates.json)
+    # 11. Update last sync dates (sync_dates.json)
     sync_data = {}
     if os.path.exists(sync_path):
         try:
@@ -242,7 +287,7 @@ def run_pdf_update(anonymize=False, provider=None, store=None):
             pass
 
     # Recalculate official PDF stats
-    if os.path.exists(official_dir) and any(f.lower().endswith(".pdf") for f in os.listdir(official_dir)):
+    if current_official_pdfs:
         newest_time = 0
         page_count = 0
         try:
@@ -269,7 +314,6 @@ def run_pdf_update(anonymize=False, provider=None, store=None):
                 "count": page_count
             }
     else:
-        # If no official PDFs exist, pop it from sync data
         sync_data.pop("official", None)
 
     with open(sync_path, "w", encoding="utf-8") as f:
