@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Knowledge Base - {{ active_db or "Выбор БД" }}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f5f7ff',
+                            100: '#ebf0ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="bg-[#0b0f19] text-gray-200 h-screen flex flex-col overflow-hidden">
+
+    <!-- Active DB check: if none, show DB manager selector -->
+    {% if not active_db %}
+    <div class="flex-1 flex items-center justify-center p-6 bg-[#0b0f19]">
+        <div class="bg-[#0e1626] border border-[#1e293b] rounded-2xl w-full max-w-md p-8 shadow-2xl space-y-6">
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-full bg-brand-500/10 flex items-center justify-center mx-auto text-brand-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                </div>
+                <h2 class="text-xl font-bold text-gray-100">Machine Knowledge Base</h2>
+                <p class="text-xs text-gray-400">Выберите базу обслуживания или создайте новую</p>
+            </div>
+
+            <!-- List Databases -->
+            <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                {% if databases %}
+                    {% for db in databases %}
+                    <button onclick="switchDatabase('{{ db.name }}')" class="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#142036] hover:bg-[#1b2b47] border border-[#1e293b]/70 hover:border-brand-500/30 transition-all text-left text-xs font-semibold text-gray-200 group">
+                        <span class="truncate group-hover:text-white">{{ db.name }}</span>
+                        <div class="flex items-center gap-2 text-[10px] text-gray-500">
+                            <span>{{ (db.size_bytes / 1024) | round | int }} KB</span>
+                            <span onclick="event.stopPropagation(); deleteDatabase('{{ db.name }}')" class="p-1 hover:text-red-400 rounded transition-colors" title="Удалить">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </span>
+                        </div>
+                    </button>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-xs text-gray-500 py-4 bg-[#0a0f1d] rounded-xl border border-[#1e293b]/50">
+                        Нет баз данных. Создайте первую ниже!
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="border-t border-[#1e293b] pt-4 space-y-4">
+                <!-- Create DB Form -->
+                <div class="space-y-2">
+                    <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Создать новую БД</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="newDbName" placeholder="Например: C6501" class="flex-1 bg-[#0a0f1d] border border-gray-800 rounded-xl px-3.5 py-2 text-xs text-gray-200 focus:outline-none focus:border-brand-500">
+                        <button onclick="createDatabase()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold transition-all shadow-md">Создать</button>
+                    </div>
+                </div>
+
+                <!-- Restore ZIP backup -->
+                <div class="space-y-2">
+                    <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Восстановить из Backup (.zip)</label>
+                    <input type="file" id="restoreFile" accept=".zip" class="hidden" onchange="uploadBackup()">
+                    <button onclick="document.getElementById('restoreFile').click()" class="w-full py-2 bg-[#142036] hover:bg-[#1b2b47] border border-[#1e293b]/70 hover:border-brand-500/30 text-xs font-semibold rounded-xl text-gray-300 hover:text-white transition-colors cursor-pointer flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        <span>Загрузить архив резервной копии</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Main KB Interface -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 border-r border-[#1e293b] bg-[#0d1527] flex flex-col overflow-hidden shrink-0">
+            <!-- Sidebar Header -->
+            <div class="p-4 border-b border-[#1e293b] flex items-center justify-between">
+                <span class="font-bold text-gray-100 flex items-center gap-2 text-sm">
+                    <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>
+                    <span>Machine KB: <span class="text-brand-400 font-semibold">{{ active_db }}</span></span>
+                </span>
+                <button onclick="closeActiveDb()" class="text-gray-400 hover:text-red-400 transition-colors" title="Сменить базу">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </div>
+
+            <!-- Nav Tabs -->
+            <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+                <button onclick="switchTab('solutions')" id="tabBtn-solutions" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all text-left bg-brand-600 text-white shadow-md">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    <span>Решения (Solutions)</span>
+                </button>
+                <button onclick="switchTab('maintenance')" id="tabBtn-maintenance" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all text-left text-gray-400 hover:bg-[#142036] hover:text-gray-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Обслуживание (History)</span>
+                </button>
+                <button onclick="switchTab('parts')" id="tabBtn-parts" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all text-left text-gray-400 hover:bg-[#142036] hover:text-gray-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <span>Узлы и детали (Parts)</span>
+                </button>
+                <button onclick="switchTab('instructions')" id="tabBtn-instructions" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all text-left text-gray-400 hover:bg-[#142036] hover:text-gray-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    <span>Инструкции (Manuals)</span>
+                </button>
+                <button onclick="switchTab('backups')" id="tabBtn-backups" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all text-left text-gray-400 hover:bg-[#142036] hover:text-gray-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                    <span>Резервные копии (Backups)</span>
+                </button>
+            </nav>
+
+            <!-- Sidebar Footer: Stats and Active Model info -->
+            <div class="p-4 border-t border-[#1e293b] bg-[#090f1a] text-[10px] text-gray-500 space-y-1">
+                <div>Подключено: {{ active_db }}</div>
+                <div>Локальное хранилище SQLite</div>
+            </div>
+        </aside>
+
+        <!-- Main Panel -->
+        <main class="flex-1 flex flex-col bg-[#0b0f19] overflow-hidden relative">
+            <!-- Search & Actions Header -->
+            <header class="h-16 border-b border-[#1e293b] px-6 flex items-center justify-between bg-[#0e1626]/80 backdrop-blur-md z-10 gap-4">
+                <!-- Search Bar -->
+                <div class="relative flex-1 max-w-xl">
+                    <input type="text" id="kbSearchInput" oninput="debounceSearch()" placeholder="Быстрый поиск FTS5 по решениям, узлам, тегам..." class="w-full bg-[#0a0f1d] border border-gray-800 rounded-xl pl-10 pr-4 py-2 text-xs text-gray-200 focus:outline-none focus:border-brand-500">
+                    <svg class="w-4 h-4 text-gray-500 absolute left-3.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+
+                <!-- Add Button dynamically updated via Tab -->
+                <button onclick="openAddModal()" id="addRecordBtn" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span id="addRecordBtnText">Добавить решение</span>
+                </button>
+            </header>
+
+            <!-- Search Results Dropdown Overlay -->
+            <div id="searchResultsOverlay" class="hidden absolute top-16 left-6 right-6 max-w-xl bg-[#0e1626] border border-[#1e293b] rounded-2xl shadow-2xl z-30 p-4 max-h-[60vh] overflow-y-auto space-y-3">
+                <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+                    <span class="text-xs font-bold text-gray-400">Результаты поиска FTS5</span>
+                    <button onclick="closeSearchResults()" class="text-xs text-gray-500 hover:text-white">Закрыть</button>
+                </div>
+                <div id="searchResultsContainer" class="space-y-2.5"></div>
+            </div>
+
+            <!-- Tab Content Viewport -->
+            <div class="flex-1 overflow-y-auto p-6" id="tabViewport">
+                <!-- Data will load here dynamically via Javascript -->
+            </div>
+        </main>
+    </div>
+    {% endif %}
+
+    <!-- MODAL DIALOGS -->
+    
+    <!-- 1. Solution Edit/Add Modal -->
+    <div id="solutionModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-[#0e1626] border border-[#1e293b] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+            <div class="px-6 py-4 border-b border-[#1e293b] flex items-center justify-between">
+                <h3 class="font-bold text-gray-100 text-sm" id="solutionModalTitle">Добавить решение</h3>
+                <button onclick="closeModal('solutionModal')" class="text-gray-400 hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <form id="solutionForm" class="p-6 overflow-y-auto flex-1 space-y-4 text-xs" onsubmit="saveSolution(event)">
+                <input type="hidden" id="solId">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Заголовок *</label>
+                        <input type="text" id="solTitle" required class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="space-y-1">
+                            <label class="font-semibold text-gray-300">Машина</label>
+                            <input type="text" id="solMachine" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="font-semibold text-gray-300">S/N</label>
+                            <input type="text" id="solSN" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Симптом (Symptom)</label>
+                        <textarea id="solSymptom" rows="3" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none"></textarea>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Причина (Cause)</label>
+                        <textarea id="solCause" rows="3" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none"></textarea>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Решение (Solution)</label>
+                        <textarea id="solSolution" rows="3" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none"></textarea>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Выполненные действия</label>
+                        <textarea id="solActions" rows="3" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none"></textarea>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Дата</label>
+                        <input type="date" id="solDate" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Автор</label>
+                        <input type="text" id="solAuthor" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Теги (через запятую)</label>
+                        <input type="text" id="solTags" placeholder="error-code, fuser" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Photos / Attachments upload panel -->
+                <div class="border-t border-gray-800 pt-3 grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="font-semibold text-gray-300 block">Фотографии</label>
+                        <input type="file" id="photoInput" multiple accept="image/*" class="hidden" onchange="uploadMedia('photo')">
+                        <button type="button" onclick="document.getElementById('photoInput').click()" class="px-3 py-2 rounded-lg bg-gray-800 text-gray-300 hover:text-white border border-gray-700">Выбрать фото</button>
+                        <div id="solPhotosList" class="flex flex-wrap gap-2 mt-2"></div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="font-semibold text-gray-300 block">Вложения (схемы, PDF)</label>
+                        <input type="file" id="fileInput" multiple class="hidden" onchange="uploadMedia('file')">
+                        <button type="button" onclick="document.getElementById('fileInput').click()" class="px-3 py-2 rounded-lg bg-gray-800 text-gray-300 hover:text-white border border-gray-700">Выбрать файлы</button>
+                        <div id="solFilesList" class="flex flex-wrap gap-2 mt-2"></div>
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 bg-[#090f1a] border-t border-[#1e293b] flex justify-end gap-2 -mx-6 -mb-6 mt-4">
+                    <button type="button" onclick="closeModal('solutionModal')" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg">Отмена</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-bold">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Maintenance Edit/Add Modal -->
+    <div id="maintenanceModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-[#0e1626] border border-[#1e293b] rounded-2xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+            <div class="px-6 py-4 border-b border-[#1e293b] flex items-center justify-between">
+                <h3 class="font-bold text-gray-100 text-sm" id="maintModalTitle">Добавить обслуживание</h3>
+                <button onclick="closeModal('maintenanceModal')" class="text-gray-400 hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <form id="maintenanceForm" class="p-6 overflow-y-auto flex-1 space-y-4 text-xs" onsubmit="saveMaintenance(event)">
+                <input type="hidden" id="maintId">
+                <div class="space-y-1">
+                    <label class="font-semibold text-gray-300">Тип работы *</label>
+                    <select id="maintType" required class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-brand-500">
+                        <option value="parts_replacement">Замена детали (Parts Replacement)</option>
+                        <option value="preventive">Профилактика (Preventive Maintenance)</option>
+                        <option value="cleaning">Чистка (Cleaning)</option>
+                        <option value="adjustment">Регулировка (Adjustment)</option>
+                        <option value="firmware">Обновление прошивки (Firmware Update)</option>
+                        <option value="repair">Ремонт (Repair)</option>
+                        <option value="setup">Настройка (Configuration/Setup)</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Дата *</label>
+                        <input type="date" id="maintDate" required class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Счётчик машины</label>
+                        <input type="number" id="maintCounter" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Исполнитель</label>
+                        <input type="text" id="maintPerformer" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Стоимость (опционально)</label>
+                        <input type="number" step="0.01" id="maintCost" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <label class="font-semibold text-gray-300">Комментарии</label>
+                    <textarea id="maintComments" rows="3" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none"></textarea>
+                </div>
+
+                <div class="px-6 py-4 bg-[#090f1a] border-t border-[#1e293b] flex justify-end gap-2 -mx-6 -mb-6 mt-4">
+                    <button type="button" onclick="closeModal('maintenanceModal')" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg">Отмена</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-bold">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Part Edit/Add Modal -->
+    <div id="partModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-[#0e1626] border border-[#1e293b] rounded-2xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+            <div class="px-6 py-4 border-b border-[#1e293b] flex items-center justify-between">
+                <h3 class="font-bold text-gray-100 text-sm" id="partModalTitle">Добавить узел/деталь</h3>
+                <button onclick="closeModal('partModal')" class="text-gray-400 hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <form id="partForm" class="p-6 overflow-y-auto flex-1 space-y-4 text-xs" onsubmit="savePart(event)">
+                <input type="hidden" id="partId">
+                <div class="space-y-1">
+                    <label class="font-semibold text-gray-300">Название узла *</label>
+                    <input type="text" id="partName" placeholder="Например: Ремень переноса (Transfer Belt)" required class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-brand-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Дата установки *</label>
+                        <input type="date" id="partDateInstalled" required class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Дата снятия</label>
+                        <input type="date" id="partDateRemoved" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Ресурс (копии)</label>
+                        <input type="number" id="partLimit" placeholder="Например: 200000" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Счётчик при установке</label>
+                        <input type="number" id="partCounter" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <label class="font-semibold text-gray-300">Комментарии</label>
+                    <textarea id="partComments" rows="3" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none"></textarea>
+                </div>
+
+                <div class="px-6 py-4 bg-[#090f1a] border-t border-[#1e293b] flex justify-end gap-2 -mx-6 -mb-6 mt-4">
+                    <button type="button" onclick="closeModal('partModal')" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg">Отмена</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-bold">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. Instruction Edit/Add Modal -->
+    <div id="instructionModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-[#0e1626] border border-[#1e293b] rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+            <div class="px-6 py-4 border-b border-[#1e293b] flex items-center justify-between">
+                <h3 class="font-bold text-gray-100 text-sm" id="instModalTitle">Добавить инструкцию</h3>
+                <button onclick="closeModal('instructionModal')" class="text-gray-400 hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <form id="instructionForm" class="p-6 overflow-y-auto flex-1 space-y-4 text-xs" onsubmit="saveInstruction(event)">
+                <input type="hidden" id="instId">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="font-semibold text-gray-300">Название инструкции *</label>
+                        <input type="text" id="instTitle" required class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="space-y-1">
+                            <label class="font-semibold text-gray-300">Дата создания</label>
+                            <input type="date" id="instDate" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="font-semibold text-gray-300">Теги</label>
+                            <input type="text" id="instTags" placeholder="laser, alignment" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between">
+                        <label class="font-semibold text-gray-300">Содержимое (Markdown) *</label>
+                        <button type="button" onclick="toggleInstPreview()" class="text-xs text-brand-400 hover:underline">Предпросмотр</button>
+                    </div>
+                    <textarea id="instContent" rows="12" required class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg p-3 text-gray-200 font-mono focus:outline-none focus:border-brand-500" placeholder="# Как выставить зазоры фьюзера..."></textarea>
+                    <div id="instPreview" class="hidden w-full bg-[#0a0f1d] border border-gray-800 rounded-lg p-3 text-gray-200 prose prose-invert max-h-60 overflow-y-auto"></div>
+                </div>
+
+                <div class="px-6 py-4 bg-[#090f1a] border-t border-[#1e293b] flex justify-end gap-2 -mx-6 -mb-6 mt-4">
+                    <button type="button" onclick="closeModal('instructionModal')" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg">Отмена</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-bold">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5. Link Related Records Modal -->
+    <div id="linkModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-[#0e1626] border border-[#1e293b] rounded-2xl w-full max-w-sm shadow-2xl p-6 space-y-4">
+            <h3 class="font-bold text-gray-100 text-sm">Связать запись</h3>
+            <div class="space-y-2 text-xs">
+                <label class="font-semibold text-gray-300">С какой записью связать?</label>
+                <select id="linkTargetType" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200" onchange="loadLinkTargetOptions()">
+                    <option value="solution">Решение (Solution)</option>
+                    <option value="maintenance">Обслуживание (History)</option>
+                    <option value="part">Деталь (Part)</option>
+                    <option value="instruction">Инструкция (Instruction)</option>
+                </select>
+            </div>
+            <div class="space-y-2 text-xs">
+                <label class="font-semibold text-gray-300">Выберите запись</label>
+                <select id="linkTargetId" class="w-full bg-[#0a0f1d] border border-gray-800 rounded-lg px-3 py-2 text-gray-200"></select>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeModal('linkModal')" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs rounded-lg">Отмена</button>
+                <button onclick="saveRelation()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold rounded-lg">Связать</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = "solutions";
+        let activeDbName = "{{ active_db }}";
+        let uploadedPhotos = [];
+        let uploadedFiles = [];
+        let isInstPreviewActive = false;
+        let activeRecordType = null;
+        let activeRecordId = null;
+
+        // On page load
+        document.addEventListener("DOMContentLoaded", () => {
+            if (activeDbName) {
+                switchTab("solutions");
+            }
+        });
+
+        // Tab selection logic
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll("nav button").forEach(btn => {
+                btn.classList.remove("bg-brand-600", "text-white", "shadow-md");
+                btn.classList.add("text-gray-400", "hover:bg-[#142036]", "hover:text-gray-200");
+            });
+            const activeBtn = document.getElementById(`tabBtn-${tab}`);
+            if (activeBtn) {
+                activeBtn.classList.add("bg-brand-600", "text-white", "shadow-md");
+                activeBtn.classList.remove("text-gray-400", "hover:bg-[#142036]", "hover:text-gray-200");
+            }
+
+            // Update add record button text
+            const addBtn = document.getElementById("addRecordBtn");
+            const addBtnText = document.getElementById("addRecordBtnText");
+            if (addBtn) {
+                if (tab === "solutions") {
+                    addBtn.classList.remove("hidden");
+                    addBtnText.textContent = "Добавить решение";
+                } else if (tab === "maintenance") {
+                    addBtn.classList.remove("hidden");
+                    addBtnText.textContent = "Добавить обслуживание";
+                } else if (tab === "parts") {
+                    addBtn.classList.remove("hidden");
+                    addBtnText.textContent = "Добавить деталь";
+                } else if (tab === "instructions") {
+                    addBtn.classList.remove("hidden");
+                    addBtnText.textContent = "Добавить инструкцию";
+                } else {
+                    addBtn.classList.add("hidden");
+                }
+            }
+
+            loadTabData();
+        }
+
+        // Switch Database
+        async function switchDatabase(name) {
+            try {
+                const response = await fetch("/kb/api/databases", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "switch", name })
+                });
+                if (!response.ok) throw new Error("Не удалось подключить базу");
+                window.location.reload();
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        // Create Database
+        async function createDatabase() {
+            const name = document.getElementById("newDbName").value.strip();
+            if (!name) {
+                alert("Пожалуйста, введите имя базы");
+                return;
+            }
+            try {
+                const response = await fetch("/kb/api/databases", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "create", name })
+                });
+                if (!response.ok) throw new Error("Не удалось создать базу");
+                window.location.reload();
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        // Delete Database
+        async function deleteDatabase(name) {
+            if (!confirm(`Вы уверены, что хотите безвозвратно удалить базу "${name}" со всеми файлами?`)) return;
+            try {
+                const response = await fetch("/kb/api/databases", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "delete", name })
+                });
+                if (!response.ok) throw new Error("Не удалось удалить базу");
+                window.location.reload();
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        // Close Database
+        async function closeActiveDb() {
+            window.location.href = "/kb"; // Trigger DB selection
+        }
+
+        // Open Add Modal
+        function openAddModal() {
+            uploadedPhotos = [];
+            uploadedFiles = [];
+            
+            if (currentTab === "solutions") {
+                document.getElementById("solutionForm").reset();
+                document.getElementById("solId").value = "";
+                document.getElementById("solDate").value = new Date().toISOString().split("T")[0];
+                document.getElementById("solPhotosList").innerHTML = "";
+                document.getElementById("solFilesList").innerHTML = "";
+                document.getElementById("solutionModalTitle").textContent = "Добавить решение";
+                openModal("solutionModal");
+            } else if (currentTab === "maintenance") {
+                document.getElementById("maintenanceForm").reset();
+                document.getElementById("maintId").value = "";
+                document.getElementById("maintDate").value = new Date().toISOString().split("T")[0];
+                document.getElementById("maintModalTitle").textContent = "Добавить обслуживание";
+                openModal("maintenanceModal");
+            } else if (currentTab === "parts") {
+                document.getElementById("partForm").reset();
+                document.getElementById("partId").value = "";
+                document.getElementById("partDateInstalled").value = new Date().toISOString().split("T")[0];
+                document.getElementById("partModalTitle").textContent = "Добавить деталь";
+                openModal("partModal");
+            } else if (currentTab === "instructions") {
+                document.getElementById("instructionForm").reset();
+                document.getElementById("instId").value = "";
+                document.getElementById("instDate").value = new Date().toISOString().split("T")[0];
+                document.getElementById("instContent").value = "";
+                document.getElementById("instPreview").classList.add("hidden");
+                document.getElementById("instContent").classList.remove("hidden");
+                isInstPreviewActive = false;
+                document.getElementById("instModalTitle").textContent = "Добавить инструкцию";
+                openModal("instructionModal");
+            }
+        }
+
+        // Modal Helpers
+        function openModal(id) {
+            document.getElementById(id).classList.remove("hidden");
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.add("hidden");
+        }
+
+        // Load Tab Data
+        async function loadTabData() {
+            const viewport = document.getElementById("tabViewport");
+            viewport.innerHTML = `<div class="text-center text-xs text-gray-500 py-10">Загрузка данных...</div>`;
+            try {
+                const response = await fetch(`/kb/api/${currentTab}`);
+                if (!response.ok) throw new Error("Не удалось загрузить данные");
+                const data = await response.json();
+                renderTabData(data);
+            } catch (e) {
+                viewport.innerHTML = `<div class="text-center text-xs text-red-400 py-10">Ошибка: ${e.message}</div>`;
+            }
+        }
+
+        // Render Tab Data
+        function renderTabData(data) {
+            const viewport = document.getElementById("tabViewport");
+            if (!data || data.length === 0) {
+                viewport.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-20 text-center space-y-3">
+                        <span class="text-xs text-gray-500">Записей в этом разделе пока нет. Создайте первую!</span>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = "";
+            if (currentTab === "solutions") {
+                html = `<div class="space-y-4">`;
+                data.forEach(sol => {
+                    const photos = JSON.parse(sol.photos || "[]");
+                    const files = JSON.parse(sol.attachments || "[]");
+                    const tags = sol.tags ? sol.tags.split(",").map(t => `<span class="bg-gray-800 text-gray-400 font-semibold px-2 py-0.5 rounded text-[10px]">${t.trim()}</span>`).join(" ") : "";
+                    
+                    html += `
+                        <div class="p-6 bg-[#0e1626] border border-[#1e293b] rounded-2xl shadow-lg space-y-4">
+                            <div class="flex items-start justify-between">
+                                <div class="space-y-1 min-w-0 flex-1">
+                                    <h4 class="font-bold text-gray-100 text-sm truncate">${sol.title}</h4>
+                                    <div class="flex flex-wrap items-center gap-3 text-[10px] text-gray-500">
+                                        <span>Машина: <b class="text-gray-300">${sol.machine || "General"}</b></span>
+                                        ${sol.serial_number ? `<span>S/N: <b class="text-gray-300">${sol.serial_number}</b></span>` : ""}
+                                        <span>Дата: ${sol.date}</span>
+                                        ${sol.author ? `<span>Автор: ${sol.author}</span>` : ""}
+                                    </div>
+                                </div>
+                                <div class="flex gap-2 shrink-0">
+                                    <button onclick="editSolution(${sol.id})" class="p-1.5 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors" title="Редактировать">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </button>
+                                    <button onclick="deleteSolution(${sol.id})" class="p-1.5 rounded bg-gray-800 hover:bg-red-950 text-red-400 transition-colors" title="Удалить">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 text-xs border-t border-gray-800/50 pt-3">
+                                <div>
+                                    <div class="font-bold text-brand-400 uppercase tracking-wider text-[10px] mb-1">Симптом (Symptom)</div>
+                                    <p class="text-gray-300 leading-relaxed whitespace-pre-wrap">${sol.symptom || "-"}</p>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-yellow-500 uppercase tracking-wider text-[10px] mb-1">Причина (Cause)</div>
+                                    <p class="text-gray-300 leading-relaxed whitespace-pre-wrap">${sol.cause || "-"}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 text-xs border-t border-gray-800/50 pt-3">
+                                <div>
+                                    <div class="font-bold text-green-500 uppercase tracking-wider text-[10px] mb-1">Решение (Solution)</div>
+                                    <p class="text-gray-300 leading-relaxed whitespace-pre-wrap">${sol.solution || "-"}</p>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-blue-500 uppercase tracking-wider text-[10px] mb-1">Действия & Результат</div>
+                                    <p class="text-gray-300 leading-relaxed whitespace-pre-wrap">${sol.actions || ""}${sol.result ? `\n<b>Результат:</b> ${sol.result}` : ""}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Photos and files -->
+                            ${photos.length > 0 ? `
+                                <div class="border-t border-gray-800/50 pt-3 space-y-1.5">
+                                    <div class="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Прикрепленные изображения</div>
+                                    <div class="flex gap-2.5 flex-wrap">
+                                        ${photos.map(p => `<a href="/kb/attachments/${p}" target="_blank"><img src="/kb/attachments/${p}" class="w-20 h-16 object-cover rounded-lg border border-gray-800 hover:border-brand-500/50 transition-all"></a>`).join("")}
+                                    </div>
+                                </div>
+                            ` : ""}
+                            
+                            ${files.length > 0 ? `
+                                <div class="border-t border-gray-800/50 pt-3 space-y-1.5">
+                                    <div class="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Файлы / Схемы</div>
+                                    <div class="flex gap-2.5 flex-wrap text-[10px]">
+                                        ${files.map(f => `<a href="/kb/attachments/${f}" target="_blank" class="px-2.5 py-1 bg-gray-800 border border-gray-700 rounded-lg hover:text-brand-400 font-semibold truncate max-w-xs flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>${f}</a>`).join("")}
+                                    </div>
+                                </div>
+                            ` : ""}
+
+                            <!-- Relations section -->
+                            <div class="border-t border-gray-800/50 pt-3 flex flex-wrap items-center justify-between gap-2">
+                                <div class="flex flex-wrap items-center gap-1.5" id="relationsList-solution-${sol.id}">
+                                    <!-- Resolved dynamically in loadRelations -->
+                                </div>
+                                <button onclick="openLinkModal('solution', ${sol.id})" class="px-2.5 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-[10px] font-semibold flex items-center gap-1"><svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>Связать запись</button>
+                            </div>
+                        </div>
+                    `;
+                    // Load relations after rendering
+                    setTimeout(() => loadRelations("solution", sol.id), 50);
+                });
+                html += `</div>`;
+            } else if (currentTab === "maintenance") {
+                html = `<div class="space-y-4">`;
+                data.forEach(m => {
+                    const costText = m.cost ? ` • Стоимость: <span class="text-green-500 font-bold">${m.cost} RUB</span>` : "";
+                    const counterText = m.counter ? ` • Счётчик: <span class="text-gray-300 font-semibold">${m.counter}</span>` : "";
+                    
+                    html += `
+                        <div class="p-5 bg-[#0e1626] border border-[#1e293b] rounded-2xl shadow-lg space-y-3">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h4 class="font-bold text-brand-400 text-xs uppercase tracking-wider">${m.type.replace('_', ' ')}</h4>
+                                    <div class="text-[10px] text-gray-500 mt-1">
+                                        Дата: ${m.date}${counterText}${costText} • Исполнитель: ${m.performer || "-"}
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="editMaintenance(${m.id})" class="p-1.5 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors" title="Редактировать">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </button>
+                                    <button onclick="deleteMaintenance(${m.id})" class="p-1.5 rounded bg-gray-800 hover:bg-red-950 text-red-400 transition-colors">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-300 leading-relaxed whitespace-pre-wrap">${m.comments || "-"}</p>
+                            
+                            <!-- Relations -->
+                            <div class="border-t border-gray-800/50 pt-2 flex flex-wrap items-center justify-between gap-2 mt-2">
+                                <div class="flex flex-wrap items-center gap-1.5" id="relationsList-maintenance-${m.id}"></div>
+                                <button onclick="openLinkModal('maintenance', ${m.id})" class="px-2.5 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-[10px] font-semibold flex items-center gap-1"><svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>Связать запись</button>
+                            </div>
+                        </div>
+                    `;
+                    setTimeout(() => loadRelations("maintenance", m.id), 50);
+                });
+                html += `</div>`;
+            } else if (currentTab === "parts") {
+                html = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+                data.forEach(p => {
+                    const statusText = p.date_removed ? `<span class="text-red-400">Снят ${p.date_removed}</span>` : `<span class="text-green-400">Установлен</span>`;
+                    
+                    html += `
+                        <div class="p-5 bg-[#0e1626] border border-[#1e293b] rounded-2xl shadow-lg space-y-3">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h4 class="font-bold text-gray-200 text-xs">${p.part_name}</h4>
+                                    <div class="text-[10px] text-gray-500 mt-1 flex items-center gap-2">
+                                        <span>Уст: ${p.date_installed}</span>
+                                        <span>•</span>
+                                        <span>${statusText}</span>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="editPart(${p.id})" class="p-1.5 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </button>
+                                    <button onclick="deletePart(${p.id})" class="p-1.5 rounded bg-gray-800 hover:bg-red-950 text-red-400 transition-colors">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="text-[10px] text-gray-400 space-y-1 bg-[#0a0f1d] p-3 rounded-lg border border-gray-800/60">
+                                <div>Ресурс: ${p.resource_limit ? `${p.resource_limit} копий` : "Не ограничен"}</div>
+                                <div>Счётчик при установке: ${p.current_counter || "Не указан"}</div>
+                                ${p.comments ? `<div class="mt-2 text-gray-300 whitespace-pre-wrap">${p.comments}</div>` : ""}
+                            </div>
+                            
+                            <!-- Relations -->
+                            <div class="border-t border-gray-800/50 pt-2 flex flex-wrap items-center justify-between gap-2 mt-2">
+                                <div class="flex flex-wrap items-center gap-1.5" id="relationsList-part-${p.id}"></div>
+                                <button onclick="openLinkModal('part', ${p.id})" class="px-2.5 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-[10px] font-semibold flex items-center gap-1"><svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>Связать запись</button>
+                            </div>
+                        </div>
+                    `;
+                    setTimeout(() => loadRelations("part", p.id), 50);
+                });
+                html += `</div>`;
+            } else if (currentTab === "instructions") {
+                html = `<div class="space-y-4">`;
+                data.forEach(inst => {
+                    const tags = inst.tags ? inst.tags.split(",").map(t => `<span class="bg-gray-800 text-gray-400 font-semibold px-2 py-0.5 rounded text-[10px]">${t.trim()}</span>`).join(" ") : "";
+                    
+                    html += `
+                        <div class="p-6 bg-[#0e1626] border border-[#1e293b] rounded-2xl shadow-lg space-y-3">
+                            <div class="flex items-start justify-between">
+                                <div class="space-y-1">
+                                    <h4 class="font-bold text-gray-200 text-xs">${inst.title}</h4>
+                                    <div class="text-[10px] text-gray-500">Дата: ${inst.date_created}</div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="editInstruction(${inst.id})" class="p-1.5 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </button>
+                                    <button onclick="deleteInstruction(${inst.id})" class="p-1.5 rounded bg-gray-800 hover:bg-red-950 text-red-400 transition-colors">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="text-xs text-gray-300 leading-relaxed bg-[#0a0f1d] p-4 rounded-xl border border-gray-800/60 prose prose-invert max-w-none whitespace-pre-wrap">${inst.content}</div>
+                            
+                            <!-- Relations -->
+                            <div class="border-t border-gray-800/50 pt-2 flex flex-wrap items-center justify-between gap-2 mt-2">
+                                <div class="flex flex-wrap items-center gap-1.5" id="relationsList-instruction-${inst.id}"></div>
+                                <button onclick="openLinkModal('instruction', ${inst.id})" class="px-2.5 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-[10px] font-semibold flex items-center gap-1"><svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>Связать запись</button>
+                            </div>
+                        </div>
+                    `;
+                    setTimeout(() => loadRelations("instruction", inst.id), 50);
+                });
+                html += `</div>`;
+            } else if (currentTab === "backups") {
+                html = `
+                    <div class="bg-[#0e1626] border border-[#1e293b] rounded-2xl p-6 space-y-6">
+                        <div class="space-y-2">
+                            <h4 class="font-bold text-gray-100 text-sm">Экспорт и Импорт</h4>
+                            <p class="text-xs text-gray-400">Экспортируйте базу данных в JSON или SQLite формат.</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <button onclick="createZipBackup()" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                                <span>Создать ZIP резервную копию</span>
+                            </button>
+                            <button onclick="exportJson()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 rounded-xl text-xs font-bold transition-all shadow-md">
+                                Экспортировать в JSON
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            viewport.innerHTML = html;
+        }
+
+        // Load Relations
+        async function loadRelations(type, id) {
+            try {
+                const response = await fetch(`/kb/api/relations?type=${type}&id=${id}`);
+                if (!response.ok) return;
+                const data = await response.json();
+                const container = document.getElementById(`relationsList-${type}-${id}`);
+                if (container) {
+                    if (data.length === 0) {
+                        container.innerHTML = `<span class="text-[9px] text-gray-600">Нет связанных записей</span>`;
+                        return;
+                    }
+                    let html = `<span class="text-[9px] text-gray-500 font-bold uppercase shrink-0">Связано:</span> `;
+                    data.forEach(rel => {
+                        html += `
+                            <span class="bg-brand-500/10 border border-brand-500/30 text-brand-400 font-semibold px-2 py-0.5 rounded text-[9px] flex items-center gap-1">
+                                <span>[${rel.type.toUpperCase()}] ${rel.title}</span>
+                                <span onclick="unlinkRecords(${rel.relation_id})" class="hover:text-red-400 cursor-pointer font-bold ml-1">×</span>
+                            </span>
+                        `;
+                    });
+                    container.innerHTML = html;
+                }
+            } catch (e) {}
+        }
+
+        // Unlink
+        async function unlinkRecords(relId) {
+            if (!confirm("Удалить связь между записями?")) return;
+            try {
+                const response = await fetch(`/kb/api/relations/${relId}`, { method: "DELETE" });
+                if (!response.ok) throw new Error();
+                loadTabData();
+            } catch (e) {
+                alert("Ошибка удаления связи");
+            }
+        }
+
+        // Save Solution
+        async function saveSolution(e) {
+            e.preventDefault();
+            const id = document.getElementById("solId").value;
+            const payload = {
+                title: document.getElementById("solTitle").value,
+                machine: document.getElementById("solMachine").value,
+                serial_number: document.getElementById("solSN").value,
+                symptom: document.getElementById("solSymptom").value,
+                cause: document.getElementById("solCause").value,
+                solution: document.getElementById("solSolution").value,
+                actions: document.getElementById("solActions").value,
+                result: "", // Can merge actions/result locally
+                date: document.getElementById("solDate").value,
+                author: document.getElementById("solAuthor").value,
+                tags: document.getElementById("solTags").value,
+                photos: uploadedPhotos,
+                attachments: uploadedFiles,
+                forum_links: [],
+                manual_links: []
+            };
+
+            const url = id ? `/kb/api/solutions/${id}` : "/kb/api/solutions";
+            const method = id ? "PUT" : "POST";
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error("Не удалось сохранить запись");
+                closeModal("solutionModal");
+                loadTabData();
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        // Save Maintenance
+        async function saveMaintenance(e) {
+            e.preventDefault();
+            const id = document.getElementById("maintId").value;
+            const payload = {
+                type: document.getElementById("maintType").value,
+                date: document.getElementById("maintDate").value,
+                counter: parseInt(document.getElementById("maintCounter").value) || null,
+                performer: document.getElementById("maintPerformer").value,
+                comments: document.getElementById("maintComments").value,
+                cost: parseFloat(document.getElementById("maintCost").value) || null,
+                photos: []
+            };
+
+            const url = id ? `/kb/api/maintenance/${id}` : "/kb/api/maintenance";
+            const method = id ? "PUT" : "POST";
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error("Не удалось сохранить запись");
+                closeModal("maintenanceModal");
+                loadTabData();
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        // Save Part
+        async function savePart(e) {
+            e.preventDefault();
+            const id = document.getElementById("partId").value;
+            const payload = {
+                part_name: document.getElementById("partName").value,
+                date_installed: document.getElementById("partDateInstalled").value,
+                date_removed: document.getElementById("partDateRemoved").value || null,
+                resource_limit: parseInt(document.getElementById("partLimit").value) || null,
+                current_counter: parseInt(document.getElementById("partCounter").value) || null,
+                comments: document.getElementById("partComments").value
+            };
+
+            const url = id ? `/kb/api/parts/${id}` : "/kb/api/parts";
+            const method = id ? "PUT" : "POST";
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error("Не удалось сохранить запись");
+                closeModal("partModal");
+                loadTabData();
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        // Save Instruction
+        async function saveInstruction(e) {
+            e.preventDefault();
+            const id = document.getElementById("instId").value;
+            const payload = {
+                title: document.getElementById("instTitle").value,
+                content: document.getElementById("instContent").value,
+                date_created: document.getElementById("instDate").value,
+                tags: document.getElementById("instTags").value
+            };
+
+            const url = id ? `/kb/api/instructions/${id}` : "/kb/api/instructions";
+            const method = id ? "PUT" : "POST";
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error("Не удалось сохранить запись");
+                closeModal("instructionModal");
+                loadTabData();
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        // Upload media (photos / files)
+        async function uploadMedia(type) {
+            const fileInput = type === "photo" ? document.getElementById("photoInput") : document.getElementById("fileInput");
+            if (!fileInput.files || fileInput.files.length === 0) return;
+            
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+            
+            try {
+                const response = await fetch("/kb/api/upload", {
+                    method: "POST",
+                    body: formData
+                });
+                if (!response.ok) throw new Error("Ошибка загрузки");
+                const res = await response.json();
+                
+                if (type === "photo") {
+                    uploadedPhotos.push(res.filename);
+                    renderUploadedMediaList("solPhotosList", uploadedPhotos, "photo");
+                } else {
+                    uploadedFiles.push(res.filename);
+                    renderUploadedMediaList("solFilesList", uploadedFiles, "file");
+                }
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        function renderUploadedMediaList(containerId, list, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = list.map((item, idx) => `
+                <span class="bg-[#142036] text-[10px] text-gray-300 font-semibold border border-gray-800 rounded px-2.5 py-1 flex items-center gap-1.5">
+                    <span>${item}</span>
+                    <span onclick="removeMedia('${containerId}', ${idx})" class="hover:text-red-400 cursor-pointer font-bold font-mono">×</span>
+                </span>
+            `).join("");
+        }
+
+        function removeMedia(containerId, idx) {
+            if (containerId === "solPhotosList") {
+                uploadedPhotos.splice(idx, 1);
+                renderUploadedMediaList("solPhotosList", uploadedPhotos, "photo");
+            } else {
+                uploadedFiles.splice(idx, 1);
+                renderUploadedMediaList("solFilesList", uploadedFiles, "file");
+            }
+        }
+
+        // Markdown instruction preview
+        function toggleInstPreview() {
+            const preview = document.getElementById("instPreview");
+            const textarea = document.getElementById("instContent");
+            if (isInstPreviewActive) {
+                preview.classList.add("hidden");
+                textarea.classList.remove("hidden");
+                isInstPreviewActive = false;
+            } else {
+                const rawMarkdown = textarea.value;
+                // Basic client-side markdown parsing for instructions (bold, headings, lists, tables)
+                preview.innerHTML = parseMarkdown(rawMarkdown);
+                preview.classList.remove("hidden");
+                textarea.classList.add("hidden");
+                isInstPreviewActive = true;
+            }
+        }
+
+        function parseMarkdown(md) {
+            if (!md) return "";
+            let html = md
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+                
+            // Headers
+            html = html.replace(/^### (.*?)$/gm, '<h5 class="text-sm font-bold text-gray-200 mt-2 mb-1">$1</h5>');
+            html = html.replace(/^## (.*?)$/gm, '<h4 class="text-base font-bold text-gray-200 mt-3 mb-1.5">$1</h4>');
+            html = html.replace(/^# (.*?)$/gm, '<h3 class="text-lg font-bold text-gray-100 mt-4 mb-2">$1</h3>');
+            
+            // Bold & Italic
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            
+            // Lists
+            html = html.replace(/^\- (.*?)$/gm, '<li class="list-disc ml-4">$1</li>');
+            
+            // Linebreaks
+            html = html.replace(/\n/g, '<br>');
+            
+            return html;
+        }
+
+        // Edit existing records
+        async function editSolution(id) {
+            try {
+                const response = await fetch("/kb/api/solutions");
+                const data = await response.json();
+                const sol = data.find(s => s.id === id);
+                if (sol) {
+                    document.getElementById("solId").value = sol.id;
+                    document.getElementById("solTitle").value = sol.title;
+                    document.getElementById("solMachine").value = sol.machine;
+                    document.getElementById("solSN").value = sol.serial_number;
+                    document.getElementById("solSymptom").value = sol.symptom;
+                    document.getElementById("solCause").value = sol.cause;
+                    document.getElementById("solSolution").value = sol.solution;
+                    document.getElementById("solActions").value = sol.actions;
+                    document.getElementById("solDate").value = sol.date;
+                    document.getElementById("solAuthor").value = sol.author;
+                    document.getElementById("solTags").value = sol.tags || "";
+                    
+                    uploadedPhotos = JSON.parse(sol.photos || "[]");
+                    uploadedFiles = JSON.parse(sol.attachments || "[]");
+                    renderUploadedMediaList("solPhotosList", uploadedPhotos, "photo");
+                    renderUploadedMediaList("solFilesList", uploadedFiles, "file");
+                    
+                    document.getElementById("solutionModalTitle").textContent = "Редактировать решение";
+                    openModal("solutionModal");
+                }
+            } catch (e) {
+                alert("Ошибка получения данных");
+            }
+        }
+
+        async function editMaintenance(id) {
+            try {
+                const response = await fetch("/kb/api/maintenance");
+                const data = await response.json();
+                const m = data.find(item => item.id === id);
+                if (m) {
+                    document.getElementById("maintId").value = m.id;
+                    document.getElementById("maintType").value = m.type;
+                    document.getElementById("maintDate").value = m.date;
+                    document.getElementById("maintCounter").value = m.counter || "";
+                    document.getElementById("maintPerformer").value = m.performer || "";
+                    document.getElementById("maintComments").value = m.comments || "";
+                    document.getElementById("maintCost").value = m.cost || "";
+                    
+                    document.getElementById("maintModalTitle").textContent = "Редактировать обслуживание";
+                    openModal("maintenanceModal");
+                }
+            } catch (e) {
+                alert("Ошибка получения данных");
+            }
+        }
+
+        async function editPart(id) {
+            try {
+                const response = await fetch("/kb/api/parts");
+                const data = await response.json();
+                const p = data.find(item => item.id === id);
+                if (p) {
+                    document.getElementById("partId").value = p.id;
+                    document.getElementById("partName").value = p.part_name;
+                    document.getElementById("partDateInstalled").value = p.date_installed;
+                    document.getElementById("partDateRemoved").value = p.date_removed || "";
+                    document.getElementById("partLimit").value = p.resource_limit || "";
+                    document.getElementById("partCounter").value = p.current_counter || "";
+                    document.getElementById("partComments").value = p.comments || "";
+                    
+                    document.getElementById("partModalTitle").textContent = "Редактировать деталь";
+                    openModal("partModal");
+                }
+            } catch (e) {
+                alert("Ошибка получения данных");
+            }
+        }
+
+        async function editInstruction(id) {
+            try {
+                const response = await fetch("/kb/api/instructions");
+                const data = await response.json();
+                const inst = data.find(item => item.id === id);
+                if (inst) {
+                    document.getElementById("instId").value = inst.id;
+                    document.getElementById("instTitle").value = inst.title;
+                    document.getElementById("instContent").value = inst.content;
+                    document.getElementById("instDate").value = inst.date_created;
+                    document.getElementById("instTags").value = inst.tags || "";
+                    
+                    document.getElementById("instPreview").classList.add("hidden");
+                    document.getElementById("instContent").classList.remove("hidden");
+                    isInstPreviewActive = false;
+                    
+                    document.getElementById("instModalTitle").textContent = "Редактировать инструкцию";
+                    openModal("instructionModal");
+                }
+            } catch (e) {
+                alert("Ошибка получения данных");
+            }
+        }
+
+        // Delete Records
+        async function deleteSolution(id) {
+            if (!confirm("Вы уверены, что хотите удалить эту запись?")) return;
+            try {
+                const response = await fetch(`/kb/api/solutions/${id}`, { method: "DELETE" });
+                if (!response.ok) throw new Error();
+                loadTabData();
+            } catch (e) {
+                alert("Не удалось удалить запись");
+            }
+        }
+
+        async function deleteMaintenance(id) {
+            if (!confirm("Вы уверены, что хотите удалить эту запись?")) return;
+            try {
+                const response = await fetch(`/kb/api/maintenance/${id}`, { method: "DELETE" });
+                if (!response.ok) throw new Error();
+                loadTabData();
+            } catch (e) {
+                alert("Не удалось удалить запись");
+            }
+        }
+
+        async function deletePart(id) {
+            if (!confirm("Вы уверены, что хотите удалить эту запись?")) return;
+            try {
+                const response = await fetch(`/kb/api/parts/${id}`, { method: "DELETE" });
+                if (!response.ok) throw new Error();
+                loadTabData();
+            } catch (e) {
+                alert("Не удалось удалить запись");
+            }
+        }
+
+        async function deleteInstruction(id) {
+            if (!confirm("Вы уверены, что хотите удалить эту запись?")) return;
+            try {
+                const response = await fetch(`/kb/api/instructions/${id}`, { method: "DELETE" });
+                if (!response.ok) throw new Error();
+                loadTabData();
+            } catch (e) {
+                alert("Не удалось удалить запись");
+            }
+        }
+
+        // Search Debouncing
+        let searchTimeout = null;
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performSearch, 300);
+        }
+
+        async function performSearch() {
+            const q = document.getElementById("kbSearchInput").value.trim();
+            const overlay = document.getElementById("searchResultsOverlay");
+            const container = document.getElementById("searchResultsContainer");
+            
+            if (!q) {
+                closeSearchResults();
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/kb/api/search?q=${encodeURIComponent(q)}`);
+                if (!response.ok) throw new Error();
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    container.innerHTML = `<div class="text-center text-xs text-gray-500 py-3">Совпадений в базе не найдено</div>`;
+                } else {
+                    container.innerHTML = data.map(item => `
+                        <div onclick="navigateToSearchResult('${item.record_type}')" class="p-3 bg-[#142036] hover:bg-[#1b2b47] border border-gray-800 rounded-xl cursor-pointer transition-all space-y-1.5">
+                            <div class="flex items-center justify-between text-[10px]">
+                                <span class="font-bold text-brand-400 uppercase">[ ${item.record_type.replace('_', ' ')} ]</span>
+                                <span class="text-gray-500">${item.tags || ""}</span>
+                            </div>
+                            <h5 class="font-bold text-gray-200 text-xs">${item.title}</h5>
+                            <p class="text-[11px] text-gray-400 leading-relaxed">${item.snippet}</p>
+                        </div>
+                    `).join("");
+                }
+                overlay.classList.remove("hidden");
+            } catch (e) {}
+        }
+
+        function closeSearchResults() {
+            document.getElementById("searchResultsOverlay").classList.add("hidden");
+        }
+
+        function navigateToSearchResult(type) {
+            closeSearchResults();
+            // If result type is different, switch to that tab
+            let targetTab = "solutions";
+            if (type === "maintenance") targetTab = "maintenance";
+            if (type === "part") targetTab = "parts";
+            if (type === "instruction") targetTab = "instructions";
+            
+            switchTab(targetTab);
+        }
+
+        // Link Relations Modal helpers
+        function openLinkModal(type, id) {
+            activeRecordType = type;
+            activeRecordId = id;
+            loadLinkTargetOptions();
+            openModal("linkModal");
+        }
+
+        async function loadLinkTargetOptions() {
+            const targetType = document.getElementById("linkTargetType").value;
+            const targetSelect = document.getElementById("linkTargetId");
+            targetSelect.innerHTML = `<option>Загрузка...</option>`;
+            
+            try {
+                const response = await fetch(`/kb/api/${targetType === "parts" ? "parts" : targetType === "solutions" ? "solutions" : targetType === "maintenance" ? "maintenance" : "instructions"}`);
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    targetSelect.innerHTML = `<option value="">Нет доступных записей</option>`;
+                    return;
+                }
+                
+                targetSelect.innerHTML = data
+                    .filter(item => !(targetType === activeRecordType && item.id === activeRecordId)) // prevent self-link
+                    .map(item => `<option value="${item.id}">${item.title || item.part_name || item.type}</option>`)
+                    .join("");
+            } catch (e) {
+                targetSelect.innerHTML = `<option value="">Ошибка загрузки</option>`;
+            }
+        }
+
+        async function saveRelation() {
+            const targetType = document.getElementById("linkTargetType").value;
+            const targetId = parseInt(document.getElementById("linkTargetId").value);
+            
+            if (!targetId) {
+                alert("Выберите запись для связи");
+                return;
+            }
+            
+            const payload = {
+                type_a: activeRecordType,
+                id_a: activeRecordId,
+                type_b: targetType === "parts" ? "part" : targetType,
+                id_b: targetId
+            };
+            
+            try {
+                const response = await fetch("/kb/api/relations", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error();
+                closeModal("linkModal");
+                loadTabData();
+            } catch (e) {
+                alert("Ошибка сохранения связи");
+            }
+        }
+
+        // Backups Actions
+        async function createZipBackup() {
+            try {
+                const response = await fetch("/kb/api/backup/create");
+                const res = await response.json();
+                if (res.status === "success") {
+                    // Trigger download
+                    window.location.href = `/kb/api/backup/download/${res.filename}`;
+                }
+            } catch (e) {
+                alert("Ошибка создания резервной копии");
+            }
+        }
+
+        async function uploadBackup() {
+            const fileInput = document.getElementById("restoreFile");
+            if (!fileInput.files || fileInput.files.length === 0) return;
+            
+            if (!confirm("ВНИМАНИЕ! Выбранная копия перезапишет текущую базу и связанные медиафайлы. Продолжить?")) return;
+            
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+            
+            try {
+                const response = await fetch("/kb/api/backup/restore", {
+                    method: "POST",
+                    body: formData
+                });
+                if (!response.ok) throw new Error("Восстановление не удалось");
+                window.location.reload();
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        async function exportJson() {
+            try {
+                const response = await fetch("/kb/api/export");
+                const data = await response.json();
+                
+                const blob = new Blob([JSON.stringify(data, null, 4)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `KM_Print_Fix_Hub_Export_${activeDbName}_${new Date().toISOString().split("T")[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                alert("Ошибка экспорта");
+            }
+        }
+    </script>
+</body>
+</html>

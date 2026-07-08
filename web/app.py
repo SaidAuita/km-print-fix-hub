@@ -285,6 +285,527 @@ async def clear_all_history():
     history_mgr.clear_history()
     return {"status": "success", "message": "История очищена"}
 
+# --- Machine Knowledge Base Endpoints ---
+from fastapi import UploadFile, File
+from kb.manager import KBManager
+import shutil
+
+kb_mgr = KBManager(data_dir=os.path.join(BASE_DIR, "kb_data"))
+
+@app.get("/kb", response_class=HTMLResponse)
+async def serve_kb(request: Request):
+    settings = config_mgr.get_all()
+    lang = settings.get("LAST_LANG", "ru")
+    t = translations.get(lang, translations.get("ru", {}))
+    
+    # TemplateResponse compatibility check
+    import inspect
+    sig = inspect.signature(templates.TemplateResponse)
+    
+    context = {
+        "request": request,
+        "t": t,
+        "active_db": kb_mgr.active_db_name[:-3] if kb_mgr.active_db_name else None,
+        "databases": kb_mgr.list_databases(),
+        "lang_code": lang
+    }
+    
+    if len(sig.parameters) >= 3:
+        return templates.TemplateResponse(request, "kb.html", context)
+    else:
+        return templates.TemplateResponse("kb.html", context)
+
+# DB Management API
+@app.get("/kb/api/databases")
+async def kb_list_dbs():
+    return {
+        "databases": kb_mgr.list_databases(),
+        "active_db": kb_mgr.active_db_name[:-3] if kb_mgr.active_db_name else None
+    }
+
+@app.post("/kb/api/databases")
+async def kb_manage_db(payload: dict):
+    action = payload.get("action")
+    name = payload.get("name", "").strip()
+    
+    if action == "create":
+        if not name:
+            raise HTTPException(status_code=400, detail="Имя базы данных пустое")
+        try:
+            filename = kb_mgr.create_database(name)
+            return {"status": "success", "db": filename[:-3]}
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+            
+    elif action == "switch":
+        if not name:
+            raise HTTPException(status_code=400, detail="Имя базы данных пустое")
+        try:
+            kb_mgr.set_active_db(name)
+            return {"status": "success", "db": kb_mgr.active_db_name[:-3]}
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+            
+    elif action == "delete":
+        if not name:
+            raise HTTPException(status_code=400, detail="Имя базы данных пустое")
+        try:
+            kb_mgr.delete_database(name)
+            return {"status": "success"}
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+            
+    raise HTTPException(status_code=400, detail="Неверное действие")
+
+# Upload Attachments
+@app.post("/kb/api/upload")
+async def kb_upload_file(file: UploadFile = File(...)):
+    if not kb_mgr.active_db_name:
+        raise HTTPException(status_code=400, detail="Нет активной базы данных")
+    
+    db_base = kb_mgr.active_db_name[:-3]
+    att_dir = os.path.join(kb_mgr.data_dir, "attachments", db_base)
+    os.makedirs(att_dir, exist_ok=True)
+    
+    filename = os.path.basename(file.filename)
+    # Deduplicate filename if already exists
+    base, ext = os.path.splitext(filename)
+    counter = 1
+    target_path = os.path.join(att_dir, filename)
+    while os.path.exists(target_path):
+        filename = f"{base}_{counter}{ext}"
+        target_path = os.path.join(att_dir, filename)
+        counter += 1
+        
+    with open(target_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    return {"status": "success", "filename": filename, "url": f"/kb/attachments/{filename}"}
+
+@app.get("/kb/attachments/{filename}")
+async def kb_serve_attachment(filename: str):
+    if not kb_mgr.active_db_name:
+        raise HTTPException(status_code=400, detail="Нет активной базы данных")
+    db_base = kb_mgr.active_db_name[:-3]
+    file_path = os.path.join(kb_mgr.data_dir, "attachments", db_base, os.path.basename(filename))
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Файл не найден")
+    return FileResponse(file_path)
+
+# Solutions CRUD API
+@app.get("/kb/api/solutions")
+async def get_solutions():
+    if not kb_mgr.active_db_name:
+        return []
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM solutions ORDER BY date DESC")
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+@app.post("/kb/api/solutions")
+async def create_solution(payload: dict):
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    
+    sql = """
+        INSERT INTO solutions (title, machine, serial_number, symptom, cause, solution, actions, result, date, author, tags, forum_links, manual_links, photos, attachments)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """
+    cursor.execute(sql, (
+        payload.get("title"),
+        payload.get("machine"),
+        payload.get("serial_number"),
+        payload.get("symptom"),
+        payload.get("cause"),
+        payload.get("solution"),
+        payload.get("actions"),
+        payload.get("result"),
+        payload.get("date", datetime.now().strftime("%Y-%m-%d")),
+        payload.get("author"),
+        payload.get("tags"),
+        json.dumps(payload.get("forum_links", [])),
+        json.dumps(payload.get("manual_links", [])),
+        json.dumps(payload.get("photos", [])),
+        json.dumps(payload.get("attachments", []))
+    ))
+    conn.commit()
+    new_id = cursor.lastrowid
+    conn.close()
+    return {"status": "success", "id": new_id}
+
+@app.put("/kb/api/solutions/{item_id}")
+async def update_solution(item_id: int, payload: dict):
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    
+    sql = """
+        UPDATE solutions 
+        SET title=?, machine=?, serial_number=?, symptom=?, cause=?, solution=?, actions=?, result=?, date=?, author=?, tags=?, forum_links=?, manual_links=?, photos=?, attachments=?
+        WHERE id=?
+    """
+    cursor.execute(sql, (
+        payload.get("title"),
+        payload.get("machine"),
+        payload.get("serial_number"),
+        payload.get("symptom"),
+        payload.get("cause"),
+        payload.get("solution"),
+        payload.get("actions"),
+        payload.get("result"),
+        payload.get("date"),
+        payload.get("author"),
+        payload.get("tags"),
+        json.dumps(payload.get("forum_links", [])),
+        json.dumps(payload.get("manual_links", [])),
+        json.dumps(payload.get("photos", [])),
+        json.dumps(payload.get("attachments", [])),
+        item_id
+    ))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+@app.delete("/kb/api/solutions/{item_id}")
+async def delete_solution(item_id: int):
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM solutions WHERE id = ?", (item_id,))
+    cursor.execute("DELETE FROM related_records WHERE (record_type_a = 'solution' AND record_id_a = ?) OR (record_type_b = 'solution' AND record_id_b = ?)", (item_id, item_id))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+# Maintenance CRUD API
+@app.get("/kb/api/maintenance")
+async def get_maintenance():
+    if not kb_mgr.active_db_name:
+        return []
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM maintenance_history ORDER BY date DESC")
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+@app.post("/kb/api/maintenance")
+async def create_maintenance(payload: dict):
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    sql = """
+        INSERT INTO maintenance_history (type, date, counter, performer, comments, photos, cost)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """
+    cursor.execute(sql, (
+        payload.get("type"),
+        payload.get("date", datetime.now().strftime("%Y-%m-%d")),
+        payload.get("counter"),
+        payload.get("performer"),
+        payload.get("comments"),
+        json.dumps(payload.get("photos", [])),
+        payload.get("cost")
+    ))
+    conn.commit()
+    new_id = cursor.lastrowid
+    conn.close()
+    return {"status": "success", "id": new_id}
+
+@app.put("/kb/api/maintenance/{item_id}")
+async def update_maintenance(item_id: int, payload: dict):
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    sql = """
+        UPDATE maintenance_history 
+        SET type=?, date=?, counter=?, performer=?, comments=?, photos=?, cost=?
+        WHERE id=?
+    """
+    cursor.execute(sql, (
+        payload.get("type"),
+        payload.get("date"),
+        payload.get("counter"),
+        payload.get("performer"),
+        payload.get("comments"),
+        json.dumps(payload.get("photos", [])),
+        payload.get("cost"),
+        item_id
+    ))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+@app.delete("/kb/api/maintenance/{item_id}")
+async def delete_maintenance(item_id: int):
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM maintenance_history WHERE id = ?", (item_id,))
+    cursor.execute("DELETE FROM related_records WHERE (record_type_a = 'maintenance' AND record_id_a = ?) OR (record_type_b = 'maintenance' AND record_id_b = ?)", (item_id, item_id))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+# Parts CRUD API
+@app.get("/kb/api/parts")
+async def get_parts():
+    if not kb_mgr.active_db_name:
+        return []
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM installed_parts ORDER BY date_installed DESC")
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+@app.post("/kb/api/parts")
+async def create_part(payload: dict):
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    sql = """
+        INSERT INTO installed_parts (part_name, date_installed, date_removed, resource_limit, current_counter, comments)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """
+    cursor.execute(sql, (
+        payload.get("part_name"),
+        payload.get("date_installed", datetime.now().strftime("%Y-%m-%d")),
+        payload.get("date_removed"),
+        payload.get("resource_limit"),
+        payload.get("current_counter"),
+        payload.get("comments")
+    ))
+    conn.commit()
+    new_id = cursor.lastrowid
+    conn.close()
+    return {"status": "success", "id": new_id}
+
+@app.put("/kb/api/parts/{item_id}")
+async def update_part(item_id: int, payload: dict):
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    sql = """
+        UPDATE installed_parts 
+        SET part_name=?, date_installed=?, date_removed=?, resource_limit=?, current_counter=?, comments=?
+        WHERE id=?
+    """
+    cursor.execute(sql, (
+        payload.get("part_name"),
+        payload.get("date_installed"),
+        payload.get("date_removed"),
+        payload.get("resource_limit"),
+        payload.get("current_counter"),
+        payload.get("comments"),
+        item_id
+    ))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+@app.delete("/kb/api/parts/{item_id}")
+async def delete_part(item_id: int):
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM installed_parts WHERE id = ?", (item_id,))
+    cursor.execute("DELETE FROM related_records WHERE (record_type_a = 'part' AND record_id_a = ?) OR (record_type_b = 'part' AND record_id_b = ?)", (item_id, item_id))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+# Instructions CRUD API
+@app.get("/kb/api/instructions")
+async def get_instructions():
+    if not kb_mgr.active_db_name:
+        return []
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM user_instructions ORDER BY date_created DESC")
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+@app.post("/kb/api/instructions")
+async def create_instruction(payload: dict):
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    sql = """
+        INSERT INTO user_instructions (title, content, date_created, tags)
+        VALUES (?, ?, ?, ?)
+    """
+    cursor.execute(sql, (
+        payload.get("title"),
+        payload.get("content"),
+        payload.get("date_created", datetime.now().strftime("%Y-%m-%d")),
+        payload.get("tags")
+    ))
+    conn.commit()
+    new_id = cursor.lastrowid
+    conn.close()
+    return {"status": "success", "id": new_id}
+
+@app.put("/kb/api/instructions/{item_id}")
+async def update_instruction(item_id: int, payload: dict):
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    sql = """
+        UPDATE user_instructions 
+        SET title=?, content=?, date_created=?, tags=?
+        WHERE id=?
+    """
+    cursor.execute(sql, (
+        payload.get("title"),
+        payload.get("content"),
+        payload.get("date_created"),
+        payload.get("tags"),
+        item_id
+    ))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+@app.delete("/kb/api/instructions/{item_id}")
+async def delete_instruction(item_id: int):
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM user_instructions WHERE id = ?", (item_id,))
+    cursor.execute("DELETE FROM related_records WHERE (record_type_a = 'instruction' AND record_id_a = ?) OR (record_type_b = 'instruction' AND record_id_b = ?)", (item_id, item_id))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+# Relations API
+@app.get("/kb/api/relations")
+async def get_relations(type: str, id: int):
+    if not kb_mgr.active_db_name:
+        return []
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    sql = """
+        SELECT id, record_type_a, record_id_a, record_type_b, record_id_b 
+        FROM related_records 
+        WHERE (record_type_a = ? AND record_id_a = ?) 
+           OR (record_type_b = ? AND record_id_b = ?)
+    """
+    cursor.execute(sql, (type, id, type, id))
+    rows = cursor.fetchall()
+    
+    results = []
+    for r in rows:
+        other_type = r["record_type_b"] if r["record_type_a"] == type and r["record_id_a"] == id else r["record_type_a"]
+        other_id = r["record_id_b"] if r["record_type_a"] == type and r["record_id_a"] == id else r["record_id_a"]
+        
+        other_title = "Unknown"
+        if other_type == "solution":
+            cursor.execute("SELECT title FROM solutions WHERE id = ?", (other_id,))
+        elif other_type == "maintenance":
+            cursor.execute("SELECT type FROM maintenance_history WHERE id = ?", (other_id,))
+        elif other_type == "part":
+            cursor.execute("SELECT part_name FROM installed_parts WHERE id = ?", (other_id,))
+        elif other_type == "instruction":
+            cursor.execute("SELECT title FROM user_instructions WHERE id = ?", (other_id,))
+            
+        row = cursor.fetchone()
+        if row:
+            other_title = row[0]
+            
+        results.append({
+            "relation_id": r["id"],
+            "type": other_type,
+            "id": other_id,
+            "title": other_title
+        })
+        
+    conn.close()
+    return results
+
+@app.post("/kb/api/relations")
+async def link_records(payload: dict):
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    
+    type_a = payload.get("type_a")
+    id_a = payload.get("id_a")
+    type_b = payload.get("type_b")
+    id_b = payload.get("id_b")
+    
+    if (type_a, id_a) > (type_b, id_b):
+        type_a, id_a, type_b, id_b = type_b, id_b, type_a, id_a
+        
+    try:
+        cursor.execute(
+            "INSERT INTO related_records (record_type_a, record_id_a, record_type_b, record_id_b) VALUES (?, ?, ?, ?)",
+            (type_a, id_a, type_b, id_b)
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        pass
+    finally:
+        conn.close()
+    return {"status": "success"}
+
+@app.delete("/kb/api/relations/{relation_id}")
+async def unlink_records(relation_id: int):
+    conn = kb_mgr.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM related_records WHERE id = ?", (relation_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+# Instant Search
+@app.get("/kb/api/search")
+async def kb_search(q: str):
+    if not kb_mgr.active_db_name:
+        return []
+    return kb_mgr.search_kb(q)
+
+# Backup and Restores
+@app.get("/kb/api/backup/create")
+async def kb_create_backup():
+    try:
+        filename = kb_mgr.create_backup()
+        return {"status": "success", "filename": filename}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/kb/api/backup/download/{filename}")
+async def kb_download_backup(filename: str):
+    filepath = os.path.join(kb_mgr.data_dir, os.path.basename(filename))
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail="Файл резервной копии не найден")
+    return FileResponse(filepath, filename=filename, media_type="application/zip")
+
+@app.post("/kb/api/backup/restore")
+async def kb_restore_backup(file: UploadFile = File(...)):
+    temp_path = os.path.join(kb_mgr.data_dir, "temp_restore.zip")
+    with open(temp_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    try:
+        restored_db = kb_mgr.restore_backup(temp_path)
+        return {"status": "success", "db": restored_db[:-3]}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+@app.get("/kb/api/export")
+async def kb_export_data():
+    if not kb_mgr.active_db_name:
+        raise HTTPException(status_code=400, detail="Нет активной базы данных")
+    data = kb_mgr.export_to_json()
+    return JSONResponse(data)
+
+@app.post("/kb/api/import")
+async def kb_import_data(payload: dict):
+    if not kb_mgr.active_db_name:
+        raise HTTPException(status_code=400, detail="Нет активной базы данных")
+    try:
+        kb_mgr.import_from_json(payload)
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+from datetime import datetime
+
 if __name__ == "__main__":
     import uvicorn
     host = config_mgr.get("WEB_HOST", "127.0.0.1")
