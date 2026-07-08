@@ -55,8 +55,15 @@ Open your browser and navigate to: `http://127.0.0.1:8000/`
 #### 5. Indexing Your Own PDF Manuals
 To index your own Konica Minolta PDF service manuals:
 1. Place your PDF files into the `Service_manuals/` directory in the project root.
+   * **Tip**: If a manual covers multiple models, list their names in the PDF filename (separated by underscores, e.g. `AccurioPress_C14010_C12010_C10500_SM.pdf`). The system will automatically map all pages of this manual to each of those models.
 2. Run the `PDF_INDEXING_ONLY.bat` script. This will extract and index the text of the PDF files, automatically moving them from `Service_manuals/` to the `Archive/official/` folder (to avoid taking duplicate space).
 3. If you need to remove PDF files from the index: manually delete them from the `Archive/official/` directory and run the `PDF_INDEXING_ONLY.bat` script. The index will rebuild and remove their data from the database.
+
+#### 6. Customizing Supported Models List
+If a specific Konica Minolta model is missing from the dropdown or is not recognized during searches, you can add it manually:
+1. Open the `models_list.txt` file located in the project root folder.
+2. Add your model name (one per line, e.g., `C14020`) and save the file.
+3. Run `PDF_INDEXING_ONLY.bat` to re-index your manuals so they map correctly to the newly added model.
 
 ---
 
@@ -105,8 +112,15 @@ start.bat
 #### 5. Индексирование собственных PDF-руководств
 Для индексирования собственных сервис-мануалов Konica Minolta в формате PDF:
 1. Поместите ваши файлы PDF в папку `Service_manuals/` в корне проекта.
-2. Запустите файл `PDF_INDEXING_ONLY.bat`. Скрипт извлечет текст, сгенерирует эмбеддинги и автоматически переместит PDF-файлы из папки `Service_manuals/` в папку `Archive\official/` (чтобы не занимать лишнее место на диске).
+   * **Совет**: Если руководство охватывает несколько моделей, перечислите их названия в имени файла PDF через подчеркивание (например, `AccurioPress_C14010_C12010_C10500_SM.pdf`). Система автоматически привяжет все страницы этого руководства к каждой из указанных моделей.
+2. Запустите файл `PDF_INDEXING_ONLY.bat`. Скрипт извлечет текст, сгенерирует эмбеддинги и автоматически переместит PDF-файлы из папки `Service_manuals/` в папку `Archive\official/` (чтобы не занимать лишнее место на диске дублями файлов).
 3. Если нужно удалить файлы PDF из индекса: вручную удалите их из папки `Archive\official/` и запустите файл `PDF_INDEXING_ONLY.bat`. Индекс перестроится и удалит информацию из базы данных.
+
+#### 6. Добавление собственных моделей
+Если какая-то модель Konica Minolta отсутствует в выпадающем списке или не распознается при поиске, вы можете добавить её самостоятельно:
+1. Откройте файл `models_list.txt` в корневой папке проекта.
+2. Допишите название вашей модели (по одной на строке, например, `C14020`) и сохраните изменения.
+3. Запустите `PDF_INDEXING_ONLY.bat`, чтобы переиндексировать ваши мануалы с учетом новой модели.
 
 ---
 
