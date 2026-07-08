@@ -168,12 +168,12 @@ class PDFImporter(DocumentImporter):
                 section = line
                 break
 
-        # Find matching models
+        # Find matching models (checking both filename and chunk text)
         models_found = []
-        text_lower = chunk_text.lower().replace('с', 'c')
+        filename_and_text = f"{pdf_filename} {chunk_text}".lower().replace('с', 'c')
         for m in models_to_check:
             pattern = r'\b' + re.escape(m.lower()) + r'\b'
-            if re.search(pattern, text_lower):
+            if re.search(pattern, filename_and_text):
                 models_found.append(m)
 
         # Detect language
