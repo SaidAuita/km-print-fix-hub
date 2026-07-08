@@ -246,6 +246,13 @@ async def get_chunk_details(chunk_id: str):
         raise HTTPException(status_code=404, detail="Фрагмент не найден")
     return JSONResponse(chunk)
 
+@app.get("/chunk/navigate/{chunk_id}")
+async def navigate_chunk_details(chunk_id: str, direction: str = "next", page: int = None):
+    chunk = search_coordinator.fts_searcher.get_chunk_by_navigation(chunk_id, direction, page)
+    if not chunk:
+        raise HTTPException(status_code=404, detail="Фрагмент не найден")
+    return JSONResponse(chunk)
+
 @app.post("/translate")
 async def translate_chunk(request: Request):
     data = await request.json()

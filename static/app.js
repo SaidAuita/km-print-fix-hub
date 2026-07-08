@@ -377,6 +377,9 @@ async function openChunkDetails(chunkId) {
         // Сбрасываем активную вкладку на "Текст"
         switchChunkTab("text");
         
+        // Синхронизируем панель навигации
+        updateNavControlsState();
+        
     } catch (e) {
         alert(e.message);
     }
@@ -734,4 +737,108 @@ if (langSelectBtn && langDropdown) {
 async function changeLanguage(lang) {
     await saveLastSelection({ LAST_LANG: lang });
     window.location.reload();
+}
+
+// Навигация и перелистывание чанков в модальном окне
+async function navigateChunk(direction) {
+    if (!currentActiveChunk) return;
+    const chunkId = currentActiveChunk.id;
+    try {
+        const response = await fetch(`/chunk/navigate/${chunkId}?direction=${direction}`);
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            const msg = errorData.detail || "Нет больше страниц или постов в этом документе";
+            alert(msg);
+            return;
+        }
+        const newChunk = await response.json();
+        updateChunkModalWithNewData(newChunk);
+    } catch (e) {
+        alert(e.message);
+    }
+}
+
+async function navigateChunkToPage() {
+    if (!currentActiveChunk) return;
+    const chunkId = currentActiveChunk.id;
+    const pageVal = parseInt(document.getElementById("navPageInput").value);
+    if (isNaN(pageVal) || pageVal < 1) {
+        alert("Пожалуйста, введите корректный номер");
+        return;
+    }
+    try {
+        const response = await fetch(`/chunk/navigate/${chunkId}?direction=page&page=${pageVal}`);
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            const msg = errorData.detail || "Страница или пост не найдены";
+            alert(msg);
+            return;
+        }
+        const newChunk = await response.json();
+        updateChunkModalWithNewData(newChunk);
+    } catch (e) {
+        alert(e.message);
+    }
+}
+
+function updateChunkModalWithNewData(chunk) {
+    currentActiveChunk = chunk;
+    
+    // Обновляем шапку
+    document.getElementById("chunkModalTitle").textContent = chunk.thread_title;
+    document.getElementById("chunkModalSubtitle").textContent = `ID: ${chunk.id} | Индекс чанка: ${chunk.chunk_index}`;
+    
+    // Обновляем текст
+    originalChunkText = chunk.text;
+    translatedChunkText = "";
+    isTranslated = false;
+    document.getElementById("content-text").textContent = originalChunkText;
+    updateTranslateButtonState();
+    
+    // Обновляем вкладку JSON
+    document.getElementById("content-json").textContent = JSON.stringify(chunk, null, 4);
+    
+    // Обновляем вкладку HTML (локальная копия во фрейме)
+    const iframe = document.getElementById("chunkIframe");
+    if (chunk.metadata && chunk.metadata.source === "official") {
+        iframe.src = `/archive/official/${chunk.metadata.document}#page=${chunk.metadata.page}`;
+    } else {
+        const sourcePath = (chunk.metadata && chunk.metadata.source) ? chunk.metadata.source + "/" : "";
+        iframe.src = `/archive/${sourcePath}thread_${chunk.thread_id}/page001.html`;
+    }
+    
+    // Ссылка на оригинал
+    document.getElementById("chunkOriginalLink").href = chunk.url;
+    
+    // Сбрасываем на вкладку "Текст" при переходе
+    switchChunkTab("text");
+    
+    // Синхронизируем ввод
+    updateNavControlsState();
+}
+
+function updateNavControlsState() {
+    if (!currentActiveChunk) return;
+    const isOfficial = currentActiveChunk.metadata && currentActiveChunk.metadata.source === "official";
+    const labelSpan = document.getElementById("navLabelPage");
+    const pageInput = document.getElementById("navPageInput");
+    
+    if (isOfficial) {
+        labelSpan.textContent = (window.TRANSLATIONS && window.TRANSLATIONS.lang_code === "ru") ? "Стр" : "Page";
+        pageInput.value = currentActiveChunk.metadata.page || 1;
+    } else {
+        labelSpan.textContent = (window.TRANSLATIONS && window.TRANSLATIONS.lang_code === "ru") ? "Пост" : "Post";
+        pageInput.value = currentActiveChunk.chunk_index || 1;
+    }
+}
+
+// Слушатель нажатия Enter на поле ввода страницы
+const navPageInputEl = document.getElementById("navPageInput");
+if (navPageInputEl) {
+    navPageInputEl.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            navigateChunkToPage();
+        }
+    });
 }

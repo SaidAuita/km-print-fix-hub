@@ -475,10 +475,31 @@
         <div class="bg-[#0e1626] border border-[#1e293b] rounded-2xl w-full max-w-4xl h-[85vh] p-6 shadow-2xl flex flex-col mx-4">
             <!-- Modal Header -->
             <div class="flex items-center justify-between pb-3 border-b border-[#1e293b]">
-                <div class="flex flex-col">
+                <div class="flex flex-col min-w-0 flex-1">
                     <h3 class="text-base font-bold text-gray-100 truncate max-w-xl" id="chunkModalTitle"></h3>
                     <span class="text-xs text-gray-500" id="chunkModalSubtitle"></span>
                 </div>
+                
+                <!-- Navigation Controls -->
+                <div class="flex items-center gap-2 bg-[#142036] border border-[#1e293b]/70 rounded-xl px-3 py-1.5 mx-4" id="modalNavControls">
+                    <!-- Prev Button -->
+                    <button id="navPrevBtn" onclick="navigateChunk('prev')" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition-colors cursor-pointer" title="Previous / Назад">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    
+                    <!-- Page Input & Go -->
+                    <div class="flex items-center gap-1.5 text-xs text-gray-400">
+                        <span id="navLabelPage">Page</span>
+                        <input type="number" id="navPageInput" class="w-12 text-center bg-[#0a0f1d] border border-gray-800 rounded px-1.5 py-0.5 text-xs text-gray-200 font-semibold focus:outline-none focus:border-brand-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" min="1">
+                        <button onclick="navigateChunkToPage()" class="px-2 py-0.5 rounded bg-brand-600 hover:bg-brand-500 text-[10px] font-bold text-white transition-colors cursor-pointer">Go</button>
+                    </div>
+                    
+                    <!-- Next Button -->
+                    <button id="navNextBtn" onclick="navigateChunk('next')" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition-colors cursor-pointer" title="Next / Вперед">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+                
                 <button onclick="toggleChunkModal(false)" class="text-gray-400 hover:text-gray-200">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
