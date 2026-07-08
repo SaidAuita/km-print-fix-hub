@@ -37,49 +37,24 @@ class SearchCoordinator:
         text = doc.get("text", "")
         combined = (title + " " + text).lower().replace('с', 'c') # Замена русской 'с' на латинскую 'c'
         
-        # Список моделей от специфических к общим (от современных линеек к более старым)
-        models_to_check = [
-            # AccurioPress / Press Color High-End
-            "c14010s", "c14010", "14010s", "14010",
-            "c12010s", "c12010", "12010s", "12010",
-            "c10500s", "c10500", "10500s", "10500",
-            "c14000", "c12000", "14000", "12000",
-            "c6100", "c6085", "6100", "6085",
-            # AccurioPress C4080 / C4070 / C4065
-            "c4080", "c4070", "c4065", "4080", "4070", "4065",
-            # AccurioPress 3080 / 3070
-            "c3080", "c3070", "3080", "3070",
-            # bizhub PRESS 2070 / 2060
-            "c2070", "c2060", "2070", "2060",
-            # bizhub PRESS 1070 / 1060 / 1060L
-            "c1070l", "c1060l", "c1070", "c1060", "1070l", "1060l", "1070", "1060",
-            # bizhub PRESS 8000 / 7000 / 6000
-            "c8000", "c7000", "c6000", "8000", "7000", "6000",
-            # bizhub PRO 6501 / 5501 / 6500 / 5500
-            "6501", "5501", "6500", "5500",
-            # Office Color C250i / C300i / C360i / C450i / C550i / C650i / C750i (i-series)
-            "c750i", "c650i", "c550i", "c450i", "c360i", "c300i", "c250i",
-            # Office Color C258 / C308 / C368 / C458 / C558 / C658 (8-series)
-            "c658", "c558", "c458", "c368", "c308", "c258",
-            # Office Color C224 / C284 / C364 / C454 / C554 (with & without e)
-            "c554e", "c454e", "c364e", "c284e", "c224e",
-            "c554", "c454", "c364", "c284", "c224",
-            # Office Color C220 / C280 / C360 (0-series)
-            "c360", "c280", "c220",
-            # Office Color Early C250 / C252 / C253 / C353 / C451 / C452
-            "c452", "c451", "c353", "c253", "c252", "c250",
-            # B&W Production (AccurioPress B&W & Pro)
-            "6136", "6120", "1250", "1200", "1100", "1052", "1051", "1050", "950", "920"
-        ]
+        # Загружаем пользовательский список моделей из внешнего файла
+        from config import load_models_list
+        user_models = load_models_list()
+        
+        models_to_check = []
+        for m in user_models:
+            m_lower = m.lower()
+            models_to_check.append(m_lower)
+            if not m_lower.startswith('c'):
+                models_to_check.append('c' + m_lower)
+                
+        # Сортируем по длине строки по убыванию, чтобы избежать частичных совпадений
+        models_to_check = sorted(list(set(models_to_check)), key=len, reverse=True)
         
         for m in models_to_check:
             pattern = r'\b' + re.escape(m) + r'\b'
             if re.search(pattern, combined):
                 return m.upper()
-            if not m.startswith('c'):
-                pattern_c = r'\bc' + re.escape(m) + r'\b'
-                if re.search(pattern_c, combined):
-                    return m.upper()
                     
         return "KM-General"
 
