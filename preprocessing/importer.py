@@ -4,6 +4,7 @@ import re
 import json
 from bs4 import BeautifulSoup
 from preprocessing.chunker import chunk_thread
+import config
 
 class DocumentImporter:
     def __init__(self, index_dir=None):
