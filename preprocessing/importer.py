@@ -99,7 +99,18 @@ class PDFImporter(DocumentImporter):
                 print(f"  -> Reading {pdf_name}...")
                 reader = PdfReader(pdf_path)
                 pages_text = []
-                for i, page in enumerate(reader.pages):
+                num_pages = len(reader.pages)
+                
+                try:
+                    from tqdm import tqdm
+                    page_iter = tqdm(enumerate(reader.pages), total=num_pages, desc=f"  Extracting {pdf_name[:20]}", unit="page", leave=False)
+                except ImportError:
+                    page_iter = enumerate(reader.pages)
+                    print(f"  -> Extracting text from {num_pages} pages...")
+                    
+                for i, page in page_iter:
+                    if not hasattr(page_iter, "total") and i % 100 == 0 and i > 0:
+                        print(f"     Page {i}/{num_pages}...")
                     text = page.extract_text() or ""
                     pages_text.append((i + 1, text))
                 
@@ -117,6 +128,7 @@ class PDFImporter(DocumentImporter):
         thread_title = os.path.splitext(pdf_filename)[0]
         
         models_to_check = [
+            "C14010", "C14010S", "C12010", "C12010S", "C10500", "C10500S",
             "C14000", "C12000", "C6100", "C6085", "C4080", "C4070", "C4065", "C3080", "C3070", "C2070", "C2060",
             "C1070", "C1060", "C8000", "C7000", "C6000", "C6501", "C5501", "C6500", "C5500", "C250I", "C300I",
             "C360I", "C258", "C308", "C368", "C224", "C284", "C364", "C220", "C280", "C360", "C452", "C451", "C353",

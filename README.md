@@ -53,10 +53,10 @@ start.bat
 Open your browser and navigate to: `http://127.0.0.1:8000/`
 
 #### 5. Indexing Your Own PDF Manuals
-The application supports automatic PDF indexing on startup:
+To index your own Konica Minolta PDF service manuals:
 1. Place your PDF files into the `Service_manuals/` directory in the project root.
-2. Launch the application (`start.bat`). The server will automatically detect any new, updated, or deleted files, update the database, and rebuild the vector store.
-3. If you need to remove PDF files from the index, delete them from the `Service_manuals/` and `Archive/official/` directories and restart the application. The index will rebuild and remove their data from the database.
+2. Run the `PDF_INDEXING_ONLY.bat` script. This will extract and index the text of the PDF files, automatically moving them from `Service_manuals/` to the `Archive/official/` folder (to avoid taking duplicate space).
+3. If you need to remove PDF files from the index: manually delete them from the `Archive/official/` directory and run the `PDF_INDEXING_ONLY.bat` script. The index will rebuild and remove their data from the database.
 
 ---
 
@@ -103,10 +103,10 @@ start.bat
 Откройте в браузере: `http://127.0.0.1:8000/`
 
 #### 5. Индексирование собственных PDF-руководств
-Приложение поддерживает автоматическое индексирование PDF при запуске:
+Для индексирования собственных сервис-мануалов Konica Minolta в формате PDF:
 1. Поместите ваши файлы PDF в папку `Service_manuals/` в корне проекта.
-2. Запустите приложение (`start.bat`). Сервер автоматически обнаружит добавленные, измененные или удаленные файлы, обновит базу данных и перестроит векторный индекс.
-3. Если нужно удалить из индекса файлы PDF — удалите их из папок `Service_manuals` и `Archive\official` и перезапустите приложение. Индекс перестроится и удалит информацию из базы.
+2. Запустите файл `PDF_INDEXING_ONLY.bat`. Скрипт извлечет текст, сгенерирует эмбеддинги и автоматически переместит PDF-файлы из папки `Service_manuals/` в папку `Archive\official/` (чтобы не занимать лишнее место на диске).
+3. Если нужно удалить файлы PDF из индекса: вручную удалите их из папки `Archive\official/` и запустите файл `PDF_INDEXING_ONLY.bat`. Индекс перестроится и удалит информацию из базы данных.
 
 ---
 
