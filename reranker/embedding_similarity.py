@@ -24,7 +24,7 @@ class EmbeddingSimilarityReranker(BaseReranker):
         """
         Загружает векторы эмбеддингов для списка chunk_ids из базы SQLite за один запрос.
         """
-        if not chunk_ids:
+        if not chunk_ids or not os.path.exists(self.db_path):
             return {}
             
         conn = sqlite3.connect(self.db_path)

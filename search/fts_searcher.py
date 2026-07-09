@@ -16,8 +16,10 @@ class FTSSearcher:
         else:
             self.db_path = db_path
             
+        self.is_ready = True
         if not os.path.exists(self.db_path):
-            raise FileNotFoundError(f"База данных SQLite не найдена по пути: {self.db_path}")
+            print(f"[!] Warning: SQLite database file not found at: {self.db_path}. Search will be unavailable.")
+            self.is_ready = False
 
     def _prepare_query(self, raw_query):
         """
@@ -39,6 +41,8 @@ class FTSSearcher:
         Выполняет полнотекстовый поиск.
         Возвращает список кортежей: (document_dict, fts_score)
         """
+        if not self.is_ready:
+            return []
         cleaned_query = self._prepare_query(query_text)
         if not cleaned_query:
             return []
@@ -111,6 +115,8 @@ class FTSSearcher:
         """
         Возвращает детальную информацию о конкретном чанке по его ID.
         """
+        if not self.is_ready:
+            return None
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
@@ -143,6 +149,8 @@ class FTSSearcher:
         """
         Позволяет переходить к следующей/предыдущей странице PDF или следующему/предыдущему посту темы.
         """
+        if not self.is_ready:
+            return None
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()

@@ -15,13 +15,21 @@ class Searcher:
         
         # Instantiate and load vector store
         self.vector_store = get_vector_store()
-        self.vector_store.load(self.index_dir)
+        self.is_ready = True
+        try:
+            self.vector_store.load(self.index_dir)
+        except Exception as e:
+            print(f"[!] Warning: Vector store could not be loaded: {e}. Semantic search will be unavailable.")
+            self.is_ready = False
         
     def search(self, query_text, k=None):
         """
         Embeds the query text and performs similarity search in the index.
         Returns a list of tuples: (document_dict, similarity_score)
         """
+        if not self.is_ready:
+            return []
+            
         if k is None:
             k = getattr(config, 'SEARCH_RESULTS_COUNT', 10)
             
