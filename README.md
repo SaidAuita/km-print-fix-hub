@@ -18,6 +18,7 @@ RAG (Retrieval-Augmented Generation) search engine and interactive technical sup
 * **Semantic & Keyword Search**: Combined BM25 (SQLite FTS5) and dense vector search (FAISS) for precise troubleshooting matching.
 * **LLM Context Optimizer**: Custom pipeline to merge overlapping threads, strip duplicated quote blocks, and filter out conversational noise, saving up to 70% of LLM token context size.
 * **Official Manuals & Forums**: Serves official PDF service manuals (directing to the exact page) and technical forum archives (TradePrint, CopyTechNet, PrintPlanet, ColorPrinting).
+* **Machine Logbook**: A localized maintenance logbook module enabling operators to record faults, solution details, replaced parts & counters, perform dynamic cross-linking between entries, and manage zip backups.
 * **Multi-Language Support**: Complete interface translation in 10 languages and bilingual query translation (queries in any language are matched against English and Russian databases).
 * **Anonymization Engine**: Light version replaces posters' names with generic identifiers to maintain privacy.
 
@@ -75,6 +76,7 @@ If a specific Konica Minolta model is missing from the dropdown or is not recogn
 * **Гибридный поиск**: Сочетание полнотекстового поиска FTS5 и векторной семантики (FAISS) для точного нахождения решений.
 * **LLM Context Optimizer**: Интеллектуальный оптимизатор контекста, сжимающий его на 40-70% благодаря удалению цитат, склейке сообщений из одной ветки и фильтрации разговоров.
 * **База знаний и PDF**: Индексация сервис-мануалов (с переходом на нужную страницу) и постов из 4 крупнейших форумов (TradePrint, CopyTechNet, PrintPlanet, ColorPrinting).
+* **Machine Logbook (Бортовой журнал обслуживания)**: Локальный модуль фиксации ремонтов, позволяющий вести учет неисправностей, замененных деталей и счетчиков, связывать записи между собой и создавать резервные копии журналов.
 * **Многоязычность**: Локализация интерфейса на 10 языков и автоматический перевод поисковых запросов.
 * **Анонимизация данных**: Light-версия заменяет реальные имена пользователей на порядковые маркеры для конфиденциальности.
 

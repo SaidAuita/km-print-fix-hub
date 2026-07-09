@@ -21,7 +21,7 @@ from search.coordinator import SearchCoordinator
 from llm.client import LLMClient
 from history.manager import HistoryManager
 
-app = FastAPI(title="KM Print Fix Hub v 1.00 (2026-07-08)")
+app = FastAPI(title="KM Print Fix Hub v 1.00 (2026-07-09)")
 
 # Настройка путей
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -292,6 +292,13 @@ import shutil
 
 kb_mgr = KBManager(data_dir=os.path.join(BASE_DIR, "kb_data"))
 
+@app.middleware("http")
+async def db_sync_middleware(request: Request, call_next):
+    if request.url.path.startswith("/kb"):
+        kb_mgr.load_last_active_db()
+    response = await call_next(request)
+    return response
+
 @app.get("/kb", response_class=HTMLResponse)
 async def serve_kb(request: Request):
     settings = config_mgr.get_all()
@@ -307,13 +314,22 @@ async def serve_kb(request: Request):
         "t": t,
         "active_db": kb_mgr.active_db_name[:-3] if kb_mgr.active_db_name else None,
         "databases": kb_mgr.list_databases(),
-        "lang_code": lang
+        "lang_code": lang,
+        "available_languages": [{"code": code, "name": data.get("lang_name")} for code, data in translations.items()]
     }
     
-    if len(sig.parameters) >= 3:
-        return templates.TemplateResponse(request, "kb.html", context)
+    if "request" in sig.parameters:
+        return templates.TemplateResponse(
+            request=request,
+            name="kb.html",
+            context=context
+        )
     else:
-        return templates.TemplateResponse("kb.html", context)
+        context["request"] = request
+        return templates.TemplateResponse(
+            name="kb.html",
+            context=context
+        )
 
 # DB Management API
 @app.get("/kb/api/databases")
@@ -355,6 +371,25 @@ async def kb_manage_db(payload: dict):
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
             
+    elif action == "rename":
+        new_name = payload.get("new_name", "").strip()
+        if not name or not new_name:
+            raise HTTPException(status_code=400, detail="Имя базы данных пустое")
+        try:
+            filename = kb_mgr.rename_database(name, new_name)
+            return {"status": "success", "db": filename[:-3]}
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+            
+    elif action == "close":
+        try:
+            kb_mgr.active_db_name = None
+            kb_mgr.active_db_path = None
+            kb_mgr.save_last_active_db()
+            return {"status": "success"}
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+            
     raise HTTPException(status_code=400, detail="Неверное действие")
 
 # Upload Attachments
@@ -367,7 +402,9 @@ async def kb_upload_file(file: UploadFile = File(...)):
     att_dir = os.path.join(kb_mgr.data_dir, "attachments", db_base)
     os.makedirs(att_dir, exist_ok=True)
     
-    filename = os.path.basename(file.filename)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    raw_filename = os.path.basename(file.filename)
+    filename = f"{timestamp}_{raw_filename}"
     # Deduplicate filename if already exists
     base, ext = os.path.splitext(filename)
     counter = 1
@@ -435,11 +472,43 @@ async def create_solution(payload: dict):
     conn.close()
     return {"status": "success", "id": new_id}
 
+def delete_file_if_exists(filename):
+    if not kb_mgr.active_db_name:
+        return
+    db_base = kb_mgr.active_db_name[:-3]
+    file_path = os.path.join(kb_mgr.data_dir, "attachments", db_base, os.path.basename(filename))
+    if os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+        except Exception:
+            pass
+
 @app.put("/kb/api/solutions/{item_id}")
 async def update_solution(item_id: int, payload: dict):
     conn = kb_mgr.get_connection()
     cursor = conn.cursor()
     
+    # Fetch old files first to find removed attachments
+    cursor.execute("SELECT photos, attachments FROM solutions WHERE id = ?", (item_id,))
+    row = cursor.fetchone()
+    old_photos = []
+    old_files = []
+    if row:
+        try:
+            old_photos = json.loads(row["photos"] or "[]")
+            old_files = json.loads(row["attachments"] or "[]")
+        except Exception:
+            pass
+            
+    new_photos = payload.get("photos", [])
+    new_files = payload.get("attachments", [])
+    
+    removed_photos = set(old_photos) - set(new_photos)
+    removed_files = set(old_files) - set(new_files)
+    
+    for filename in removed_photos.union(removed_files):
+        delete_file_if_exists(filename)
+        
     sql = """
         UPDATE solutions 
         SET title=?, machine=?, serial_number=?, symptom=?, cause=?, solution=?, actions=?, result=?, date=?, author=?, tags=?, forum_links=?, manual_links=?, photos=?, attachments=?
@@ -471,6 +540,19 @@ async def update_solution(item_id: int, payload: dict):
 async def delete_solution(item_id: int):
     conn = kb_mgr.get_connection()
     cursor = conn.cursor()
+    
+    # Fetch record to find files to delete
+    cursor.execute("SELECT photos, attachments FROM solutions WHERE id = ?", (item_id,))
+    row = cursor.fetchone()
+    if row:
+        try:
+            photos = json.loads(row["photos"] or "[]")
+            files = json.loads(row["attachments"] or "[]")
+            for filename in photos + files:
+                delete_file_if_exists(filename)
+        except Exception:
+            pass
+            
     cursor.execute("DELETE FROM solutions WHERE id = ?", (item_id,))
     cursor.execute("DELETE FROM related_records WHERE (record_type_a = 'solution' AND record_id_a = ?) OR (record_type_b = 'solution' AND record_id_b = ?)", (item_id, item_id))
     conn.commit()
@@ -494,11 +576,12 @@ async def create_maintenance(payload: dict):
     conn = kb_mgr.get_connection()
     cursor = conn.cursor()
     sql = """
-        INSERT INTO maintenance_history (type, date, counter, performer, comments, photos, cost)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO maintenance_history (type, title, date, counter, performer, comments, photos, cost)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """
     cursor.execute(sql, (
         payload.get("type"),
+        payload.get("title"),
         payload.get("date", datetime.now().strftime("%Y-%m-%d")),
         payload.get("counter"),
         payload.get("performer"),
@@ -515,13 +598,30 @@ async def create_maintenance(payload: dict):
 async def update_maintenance(item_id: int, payload: dict):
     conn = kb_mgr.get_connection()
     cursor = conn.cursor()
+    
+    # Fetch old record first to find deleted photos
+    cursor.execute("SELECT photos FROM maintenance_history WHERE id = ?", (item_id,))
+    row = cursor.fetchone()
+    old_photos = []
+    if row:
+        try:
+            old_photos = json.loads(row["photos"] or "[]")
+        except Exception:
+            pass
+            
+    new_photos = payload.get("photos", [])
+    removed_photos = set(old_photos) - set(new_photos)
+    for filename in removed_photos:
+        delete_file_if_exists(filename)
+        
     sql = """
         UPDATE maintenance_history 
-        SET type=?, date=?, counter=?, performer=?, comments=?, photos=?, cost=?
+        SET type=?, title=?, date=?, counter=?, performer=?, comments=?, photos=?, cost=?
         WHERE id=?
     """
     cursor.execute(sql, (
         payload.get("type"),
+        payload.get("title"),
         payload.get("date"),
         payload.get("counter"),
         payload.get("performer"),
@@ -538,6 +638,18 @@ async def update_maintenance(item_id: int, payload: dict):
 async def delete_maintenance(item_id: int):
     conn = kb_mgr.get_connection()
     cursor = conn.cursor()
+    
+    # Fetch record first to find photos to delete
+    cursor.execute("SELECT photos FROM maintenance_history WHERE id = ?", (item_id,))
+    row = cursor.fetchone()
+    if row:
+        try:
+            photos = json.loads(row["photos"] or "[]")
+            for filename in photos:
+                delete_file_if_exists(filename)
+        except Exception:
+            pass
+            
     cursor.execute("DELETE FROM maintenance_history WHERE id = ?", (item_id,))
     cursor.execute("DELETE FROM related_records WHERE (record_type_a = 'maintenance' AND record_id_a = ?) OR (record_type_b = 'maintenance' AND record_id_b = ?)", (item_id, item_id))
     conn.commit()
@@ -695,7 +807,7 @@ async def get_relations(type: str, id: int):
         if other_type == "solution":
             cursor.execute("SELECT title FROM solutions WHERE id = ?", (other_id,))
         elif other_type == "maintenance":
-            cursor.execute("SELECT type FROM maintenance_history WHERE id = ?", (other_id,))
+            cursor.execute("SELECT coalesce(title, type) FROM maintenance_history WHERE id = ?", (other_id,))
         elif other_type == "part":
             cursor.execute("SELECT part_name FROM installed_parts WHERE id = ?", (other_id,))
         elif other_type == "instruction":
@@ -767,7 +879,7 @@ async def kb_create_backup():
 
 @app.get("/kb/api/backup/download/{filename}")
 async def kb_download_backup(filename: str):
-    filepath = os.path.join(kb_mgr.data_dir, os.path.basename(filename))
+    filepath = os.path.join(kb_mgr.backup_dir, os.path.basename(filename))
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="Файл резервной копии не найден")
     return FileResponse(filepath, filename=filename, media_type="application/zip")

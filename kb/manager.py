@@ -14,6 +14,8 @@ class KBManager:
         # Ensure directories exist
         os.makedirs(self.data_dir, exist_ok=True)
         os.makedirs(os.path.join(self.data_dir, "attachments"), exist_ok=True)
+        self.backup_dir = os.path.join(os.path.dirname(self.data_dir) or ".", "Backup")
+        os.makedirs(self.backup_dir, exist_ok=True)
         
         # Load last active database from general settings if exists
         self.load_last_active_db()
@@ -33,8 +35,11 @@ class KBManager:
                 with open(active_info_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     name = data.get("active_db")
-                    if name and os.path.exists(self.get_db_path(name)):
-                        self.set_active_db(name)
+                    if name:
+                        self.active_db_name = os.path.basename(name)
+                        if not self.active_db_name.endswith(".db"):
+                            self.active_db_name += ".db"
+                        self.active_db_path = self.get_db_path(self.active_db_name)
             except Exception:
                 pass
 
@@ -104,6 +109,7 @@ class KBManager:
         CREATE TABLE IF NOT EXISTS maintenance_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             type TEXT NOT NULL, -- parts_replacement, preventive, cleaning, adjustment, firmware, repair, setup
+            title TEXT, -- Unique descriptor for linking
             date TEXT NOT NULL,
             counter INTEGER,
             performer TEXT,
@@ -112,6 +118,12 @@ class KBManager:
             cost REAL
         );
         """)
+        
+        # Check and alter schema for existing tables
+        cursor.execute("PRAGMA table_info(maintenance_history)")
+        columns = [row["name"] for row in cursor.fetchall()]
+        if "title" not in columns:
+            cursor.execute("ALTER TABLE maintenance_history ADD COLUMN title TEXT")
         
         # 4. Installed Parts Table
         cursor.execute("""
@@ -191,13 +203,13 @@ class KBManager:
         cursor.execute("""
         CREATE TRIGGER IF NOT EXISTS trg_maintenance_insert AFTER INSERT ON maintenance_history BEGIN
             INSERT INTO fts_kb(record_type, record_id, title, content, tags)
-            VALUES ('maintenance', new.id, new.type, new.comments, '');
+            VALUES ('maintenance', new.id, coalesce(new.title, new.type), new.comments, '');
         END;
         """)
         cursor.execute("""
         CREATE TRIGGER IF NOT EXISTS trg_maintenance_update AFTER UPDATE ON maintenance_history BEGIN
             UPDATE fts_kb SET 
-                title = new.type,
+                title = coalesce(new.title, new.type),
                 content = new.comments
             WHERE record_type = 'maintenance' AND record_id = old.id;
         END;
@@ -298,6 +310,37 @@ class KBManager:
         if os.path.exists(att_dir):
             shutil.rmtree(att_dir)
 
+    def rename_database(self, old_name, new_name):
+        old_name = os.path.basename(old_name).strip()
+        new_name = os.path.basename(new_name).strip()
+        if not old_name or not new_name:
+            raise Exception("Invalid database name")
+            
+        old_filename = old_name if old_name.endswith(".db") else old_name + ".db"
+        new_filename = new_name if new_name.endswith(".db") else new_name + ".db"
+        
+        old_path = self.get_db_path(old_filename)
+        new_path = self.get_db_path(new_filename)
+        
+        if not os.path.exists(old_path):
+            raise Exception("Source database not found")
+        if os.path.exists(new_path):
+            raise Exception("Target database already exists")
+            
+        os.rename(old_path, new_path)
+        
+        old_att_dir = os.path.join(self.data_dir, "attachments", old_filename[:-3])
+        new_att_dir = os.path.join(self.data_dir, "attachments", new_filename[:-3])
+        if os.path.exists(old_att_dir):
+            os.rename(old_att_dir, new_att_dir)
+            
+        if self.active_db_name == old_filename:
+            self.active_db_name = new_filename
+            self.active_db_path = new_path
+            self.save_last_active_db()
+            
+        return new_filename
+
     def search_kb(self, query):
         if not query.strip():
             return []
@@ -357,7 +400,7 @@ class KBManager:
         db_base = self.active_db_name[:-3]
         timestamp = datetime.now().strftime("%Y-%m-%d")
         backup_filename = f"KM_Print_Fix_Hub_Backup_{db_base}_{timestamp}.zip"
-        backup_path = os.path.join(self.data_dir, backup_filename)
+        backup_path = os.path.join(self.backup_dir, backup_filename)
         
         with zipfile.ZipFile(backup_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             zipf.write(self.active_db_path, arcname=self.active_db_name)
@@ -439,10 +482,11 @@ class KBManager:
             cursor.execute("INSERT INTO fts_kb(record_type, record_id, title, content, tags) VALUES ('solution', ?, ?, ?, ?)",
                            (r["id"], r["title"], content, r["tags"]))
                            
-        cursor.execute("SELECT id, type, comments FROM maintenance_history")
+        cursor.execute("SELECT id, type, title, comments FROM maintenance_history")
         for r in cursor.fetchall():
+            title_val = r["title"] if r["title"] else r["type"]
             cursor.execute("INSERT INTO fts_kb(record_type, record_id, title, content, tags) VALUES ('maintenance', ?, ?, ?, '')",
-                           (r["id"], r["type"], r["comments"]))
+                           (r["id"], title_val, r["comments"]))
                            
         cursor.execute("SELECT id, part_name, comments FROM installed_parts")
         for r in cursor.fetchall():
