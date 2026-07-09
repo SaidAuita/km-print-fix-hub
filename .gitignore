@@ -8,7 +8,6 @@ __pycache__/
 
 # Local user configurations & history database
 settings.json
-history/
 history.db
 
 # Large compiled database indices (downloaded from Mega.nz)
