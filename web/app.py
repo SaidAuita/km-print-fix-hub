@@ -296,7 +296,7 @@ async def get_available_models(provider: str = None, api_base: str = None):
     models_url = f"{api_base.rstrip('/')}/models"
     try:
         import requests
-        response = requests.get(models_url, timeout=3)
+        response = requests.get(models_url, timeout=10.0)
         if response.status_code == 200:
             data = response.json()
             models = data.get("data", [])
