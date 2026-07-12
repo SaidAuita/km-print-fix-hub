@@ -21,7 +21,7 @@ from search.coordinator import SearchCoordinator
 from llm.client import LLMClient
 from history.manager import HistoryManager
 
-app = FastAPI(title="KM Print Fix Hub v 1.00 (2026-07-10)")
+app = FastAPI(title="KM Print Fix Hub v 1.00 (2026-07-12)")
 
 # Настройка путей
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -946,6 +946,28 @@ async def kb_import_data(payload: dict):
         return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/db/stats")
+async def get_db_stats():
+    import sqlite3
+    fts_searcher = search_coordinator.fts_searcher
+    if not fts_searcher or not fts_searcher.is_ready:
+        return {"total_chunks": 0, "summarized_chunks": 0}
+    try:
+        conn = sqlite3.connect(fts_searcher.db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM chunks")
+        total_chunks = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM chunks WHERE summary IS NOT NULL AND summary != ''")
+        summarized_chunks = cursor.fetchone()[0]
+        conn.close()
+        return {
+            "total_chunks": total_chunks,
+            "summarized_chunks": summarized_chunks
+        }
+    except Exception as e:
+        print(f"[!] Error reading db stats: {e}")
+        return {"total_chunks": 0, "summarized_chunks": 0}
 
 from datetime import datetime
 

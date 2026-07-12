@@ -20,6 +20,24 @@ class FTSSearcher:
         if not os.path.exists(self.db_path):
             print(f"[!] Warning: SQLite database file not found at: {self.db_path}. Search will be unavailable.")
             self.is_ready = False
+            
+        if self.is_ready:
+            self._run_migrations()
+
+    def _run_migrations(self):
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute("PRAGMA table_info(chunks)")
+            columns = [row[1] for row in cursor.fetchall()]
+            if "summary" not in columns:
+                print("[*] Running migration: adding 'summary' column to 'chunks' table...")
+                cursor.execute("ALTER TABLE chunks ADD COLUMN summary TEXT")
+                conn.commit()
+                print("[+] Migration completed successfully!")
+            conn.close()
+        except Exception as e:
+            print(f"[!] Error running migrations on {self.db_path}: {e}")
 
     def _prepare_query(self, raw_query):
         """
@@ -140,7 +158,7 @@ class FTSSearcher:
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
-        sql = "SELECT chunk_id, thread_id, thread_title, url, chunk_index, text, metadata_json, source FROM chunks WHERE chunk_id = ?"
+        sql = "SELECT chunk_id, thread_id, thread_title, url, chunk_index, text, metadata_json, source, summary FROM chunks WHERE chunk_id = ?"
         try:
             cursor.execute(sql, (chunk_id,))
             row = cursor.fetchone()
@@ -164,7 +182,8 @@ class FTSSearcher:
                     "chunk_index": row["chunk_index"],
                     "text": row["text"],
                     "metadata": metadata,
-                    "total_count": total_count
+                    "total_count": total_count,
+                    "summary": row["summary"]
                 }
         except Exception as e:
             print(f"[!] Ошибка получения чанка {chunk_id}: {e}")
@@ -214,7 +233,7 @@ class FTSSearcher:
                     
                 # Ищем чанк с этой страницей
                 pattern = f"official_{thread_title}_page_{next_page}_chunk%"
-                sql = "SELECT chunk_id, thread_id, thread_title, url, chunk_index, text, metadata_json FROM chunks WHERE source = 'official' AND thread_title = ? AND chunk_id LIKE ? LIMIT 1"
+                sql = "SELECT chunk_id, thread_id, thread_title, url, chunk_index, text, metadata_json, summary FROM chunks WHERE source = 'official' AND thread_title = ? AND chunk_id LIKE ? LIMIT 1"
                 cursor.execute(sql, (thread_title, pattern))
                 row = cursor.fetchone()
                 
@@ -229,7 +248,7 @@ class FTSSearcher:
                 else:
                     return None
                     
-                sql = "SELECT chunk_id, thread_id, thread_title, url, chunk_index, text, metadata_json FROM chunks WHERE source = ? AND thread_id = ? AND chunk_index = ? LIMIT 1"
+                sql = "SELECT chunk_id, thread_id, thread_title, url, chunk_index, text, metadata_json, summary FROM chunks WHERE source = ? AND thread_id = ? AND chunk_index = ? LIMIT 1"
                 cursor.execute(sql, (source, thread_id, next_idx))
                 row = cursor.fetchone()
                 
@@ -249,7 +268,8 @@ class FTSSearcher:
                     "chunk_index": row["chunk_index"],
                     "text": row["text"],
                     "metadata": meta,
-                    "total_count": total_count
+                    "total_count": total_count,
+                    "summary": row["summary"]
                 }
         except Exception as e:
             print(f"[!] Ошибка навигации по чанку {current_chunk_id}: {e}")

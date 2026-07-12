@@ -58,10 +58,34 @@ def build_prompt(query, search_results):
     context_parts = []
     sources = []
     
+    context_mode = config_mgr.get("LLM_CONTEXT_MODE", "quality")
+    
+    # Инкрементально подтягиваем сжатые выжимки из SQLite при необходимости
+    if context_mode == "fast" and search_results:
+        import sqlite3
+        try:
+            db_path = os.path.join(config_mgr.get("INDEX_DIR", "Index"), "knowledge_base.db")
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            for doc, _ in search_results:
+                doc_id = doc.get("id")
+                cursor.execute("SELECT summary FROM chunks WHERE chunk_id = ?", (doc_id,))
+                row = cursor.fetchone()
+                if row:
+                    doc["summary"] = row[0]
+            conn.close()
+        except Exception:
+            pass # Игнорируем ошибки, сработает дефолтный фолбек
+            
     for idx, (doc, score) in enumerate(search_results, 1):
         thread_title = doc.get("thread_title", "Без названия")
         url = doc.get("url", "Нет ссылки")
-        text = doc.get("text", "")
+        
+        text = ""
+        if context_mode == "fast":
+            text = doc.get("summary") or ""
+        if not text:
+            text = doc.get("text", "")
         
         # Запоминаем источник для вывода пользователю
         sources.append({

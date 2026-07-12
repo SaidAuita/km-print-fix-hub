@@ -531,6 +531,16 @@ function toggleSettingsModal(show) {
         if (typeof refreshModelList === "function") {
             refreshModelList();
         }
+        // Fetch DB Stats
+        fetch("/api/db/stats")
+            .then(res => res.json())
+            .then(data => {
+                const totalEl = document.getElementById("dbStatsTotal");
+                const sumEl = document.getElementById("dbStatsSummarized");
+                if (totalEl) totalEl.textContent = data.total_chunks;
+                if (sumEl) sumEl.textContent = data.summarized_chunks;
+            })
+            .catch(err => console.error("Error loading DB stats:", err));
     } else {
         modal.classList.add("hidden");
     }
@@ -602,6 +612,12 @@ async function saveSettings(e) {
     settings["LAST_STRICT_MODE"] = document.getElementById("strictModeCheckModal").checked;
     settings["LAST_ENABLE_CONTEXT_OPTIMIZER"] = document.getElementById("contextOptimizerCheckModal").checked;
     settings["LAST_DIRECT_FORUM_LINKS"] = document.getElementById("directForumLinksCheckModal").checked;
+    
+    const contextModeSelect = form.querySelector("[name='LLM_CONTEXT_MODE']");
+    if (contextModeSelect) {
+        settings["LAST_CONTEXT_MODE"] = contextModeSelect.value;
+        settings["LLM_CONTEXT_MODE"] = contextModeSelect.value;
+    }
 
     try {
         const response = await fetch("/settings", {

@@ -106,7 +106,8 @@ def run_pdf_update(anonymize=False, provider=None, store=None):
         text TEXT,
         metadata_json TEXT,
         embedding BLOB,
-        source TEXT
+        source TEXT,
+        summary TEXT
     )
     """)
     cursor.execute("""
@@ -234,10 +235,10 @@ def run_pdf_update(anonymize=False, provider=None, store=None):
             
             emb_bytes = np.array(emb, dtype=np.float32).tobytes()
             
-            chunks_data.append((chunk_id, thread_id, thread_title, url, chunk_index, text, metadata_json, emb_bytes, source))
+            chunks_data.append((chunk_id, thread_id, thread_title, url, chunk_index, text, metadata_json, emb_bytes, source, None))
             fts_data.append((chunk_id, thread_title, text))
             
-        cursor.executemany("INSERT INTO chunks VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", chunks_data)
+        cursor.executemany("INSERT INTO chunks VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", chunks_data)
         cursor.executemany("INSERT INTO fts_chunks VALUES (?, ?, ?)", fts_data)
         conn.commit()
 

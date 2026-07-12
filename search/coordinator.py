@@ -441,4 +441,20 @@ class SearchCoordinator:
             "context_optimization": opt_info
         }
         
+        # Enrich reranked documents with their summary fields from SQLite
+        if reranked:
+            import sqlite3
+            try:
+                conn = sqlite3.connect(self.fts_searcher.db_path)
+                cursor = conn.cursor()
+                for doc, _ in reranked:
+                    doc_id = doc["id"]
+                    cursor.execute("SELECT summary FROM chunks WHERE chunk_id = ?", (doc_id,))
+                    row = cursor.fetchone()
+                    if row:
+                        doc["summary"] = row[0]
+                conn.close()
+            except Exception as e:
+                print(f"[!] Error fetching summaries during search: {e}")
+
         return reranked, debug_info

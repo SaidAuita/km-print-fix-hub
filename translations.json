@@ -2,7 +2,7 @@
     "ru": {
         "lang_code": "ru",
         "lang_name": "Русский",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-12)",
         "active_model": "Модель",
         "knowledge_base": "База знаний",
         "search_diagnostics": "Диагностика поиска (Debug)",
@@ -171,12 +171,16 @@
         "kb_rename_btn": "Переименовать",
         "forums": "Форумы",
         "kb_form_title_placeholder": "Например: Замена фотобарабана Cyan",
-        "kb_date_placeholder": "ГГГГ-ММ-ДД"
+        "kb_date_placeholder": "ГГГГ-ММ-ДД",
+        "settings_context_mode": "Режим контекста RAG",
+        "context_mode_quality": "Качество (полный текст)",
+        "context_mode_fast": "Скорость (сжатый текст)",
+        "summarized_chunks_label": "Сжатых чанков в базе"
     },
     "en": {
         "lang_code": "en",
         "lang_name": "English",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-12)",
         "active_model": "Model",
         "knowledge_base": "Knowledge Base",
         "search_diagnostics": "Search Diagnostics (Debug)",
@@ -345,12 +349,16 @@
         "kb_rename_btn": "Rename",
         "forums": "Forums",
         "kb_form_title_placeholder": "e.g. Cyan drum replacement",
-        "kb_date_placeholder": "YYYY-MM-DD"
+        "kb_date_placeholder": "YYYY-MM-DD",
+        "settings_context_mode": "RAG Context Mode",
+        "context_mode_quality": "Quality (full text)",
+        "context_mode_fast": "Speed (compressed summary)",
+        "summarized_chunks_label": "Summarized chunks in DB"
     },
     "de": {
         "lang_code": "de",
         "lang_name": "Deutsch",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-12)",
         "active_model": "Modell",
         "knowledge_base": "Wissensdatenbank",
         "search_diagnostics": "Suchdiagnose (Debug)",
@@ -521,7 +529,7 @@
     "fr": {
         "lang_code": "fr",
         "lang_name": "Français",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-12)",
         "active_model": "Modèle",
         "knowledge_base": "Base de connaissances",
         "search_diagnostics": "Diagnostic de recherche (Debug)",
@@ -692,7 +700,7 @@
     "es": {
         "lang_code": "es",
         "lang_name": "Español",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-12)",
         "active_model": "Modelo",
         "knowledge_base": "Base de conocimientos",
         "search_diagnostics": "Diagnóstico de búsqueda (Debug)",
@@ -863,7 +871,7 @@
     "it": {
         "lang_code": "it",
         "lang_name": "Italiano",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-12)",
         "active_model": "Modello",
         "knowledge_base": "Knowledge Base",
         "search_diagnostics": "Diagnostica di ricerca (Debug)",
@@ -1034,7 +1042,7 @@
     "zh": {
         "lang_code": "zh",
         "lang_name": "中文",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-12)",
         "active_model": "型号",
         "knowledge_base": "知识库",
         "search_diagnostics": "搜索诊断 (Debug)",
@@ -1205,7 +1213,7 @@
     "ja": {
         "lang_code": "ja",
         "lang_name": "日本語",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-12)",
         "active_model": "モデル",
         "knowledge_base": "ナレッジベース",
         "search_diagnostics": "検索診断 (デバッグ)",
@@ -1376,7 +1384,7 @@
     "pt": {
         "lang_code": "pt",
         "lang_name": "Português",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-12)",
         "active_model": "Modelo",
         "knowledge_base": "Base de Conhecimento",
         "search_diagnostics": "Diagnóstico de Busca (Debug)",
@@ -1530,7 +1538,7 @@
     "tr": {
         "lang_code": "tr",
         "lang_name": "Türkçe",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-12)",
         "active_model": "Model",
         "knowledge_base": "Bilgi Bankası",
         "search_diagnostics": "Arama Teşhisi (Debug)",

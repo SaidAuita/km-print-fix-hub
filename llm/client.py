@@ -62,8 +62,15 @@ class LLMClient:
         current_words = 0
         used_documents = []
         
+        context_mode = self.config_mgr.get("LLM_CONTEXT_MODE", "quality")
+        
         for idx, (doc, score) in enumerate(documents, 1):
-            text = doc.get("text", "")
+            text = ""
+            if context_mode == "fast":
+                text = doc.get("summary") or ""
+            if not text:
+                text = doc.get("text", "")
+                
             chunk_words = len(text.split())
             
             # Проверяем лимит контекста
