@@ -425,10 +425,12 @@
                                 <span>{{ t.refresh | default('Refresh / Обновить') }}</span>
                             </button>
                         </div>
-                        <input type="text" id="llmModelInput" name="LLM_MODEL" value="{{ settings.LLM_MODEL or '' }}" list="llmModelsDatalist" placeholder="e.g. gemma2:9b (leave empty for auto)" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200">
-                        <datalist id="llmModelsDatalist">
-                            <!-- Will be populated via JS -->
-                        </datalist>
+                        <select id="llmModelSelect" name="LLM_MODEL" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2.5 focus:outline-none text-gray-200 cursor-pointer">
+                            <option value="">Auto Detect / Автоопределение</option>
+                            {% if settings.LLM_MODEL %}
+                                <option value="{{ settings.LLM_MODEL }}" selected>{{ settings.LLM_MODEL }}</option>
+                            {% endif %}
+                        </select>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-400 mb-1">{{ t.settings_embedding_model }}</label>

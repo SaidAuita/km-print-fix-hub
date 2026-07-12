@@ -551,10 +551,17 @@ async function refreshModelList() {
     const providerSelect = document.getElementById("llmProviderSelect");
     const lmstudioUrl = document.getElementById("lmstudioUrlInput").value.trim();
     const ollamaUrl = document.getElementById("ollamaUrlInput").value.trim();
-    const datalist = document.getElementById("llmModelsDatalist");
-    if (!datalist) return;
+    const selectEl = document.getElementById("llmModelSelect");
+    if (!selectEl) return;
     
-    datalist.innerHTML = "";
+    const currentValue = selectEl.value;
+    selectEl.innerHTML = "";
+    
+    // Опция автоопределения
+    const autoOption = document.createElement("option");
+    autoOption.value = "";
+    autoOption.textContent = "Auto Detect / Автоопределение";
+    selectEl.appendChild(autoOption);
     
     const provider = providerSelect.value;
     const apiBase = provider === "ollama" ? ollamaUrl : lmstudioUrl;
@@ -567,7 +574,11 @@ async function refreshModelList() {
                 data.models.forEach(model => {
                     const option = document.createElement("option");
                     option.value = model;
-                    datalist.appendChild(option);
+                    option.textContent = model;
+                    if (model === currentValue) {
+                        option.selected = true;
+                    }
+                    selectEl.appendChild(option);
                 });
             }
         }
@@ -591,7 +602,7 @@ async function saveSettings(e) {
     const provider = document.getElementById("llmProviderSelect").value;
     const lmstudioUrl = document.getElementById("lmstudioUrlInput").value.trim();
     const ollamaUrl = document.getElementById("ollamaUrlInput").value.trim();
-    const llmModel = document.getElementById("llmModelInput").value.trim();
+    const llmModel = document.getElementById("llmModelSelect").value;
     
     settings["LLM_PROVIDER"] = provider;
     settings["provider"] = provider;
