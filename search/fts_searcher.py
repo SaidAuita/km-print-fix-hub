@@ -111,6 +111,25 @@ class FTSSearcher:
             
         return results
 
+    def _get_total_count(self, cursor, source, thread_id, thread_title):
+        try:
+            if source == 'official':
+                cursor.execute(
+                    "SELECT COUNT(DISTINCT CAST(json_extract(metadata_json, '$.page') AS INTEGER)) FROM chunks WHERE source = 'official' AND thread_title = ?",
+                    (thread_title,)
+                )
+                row = cursor.fetchone()
+                return row[0] if row else 1
+            else:
+                cursor.execute(
+                    "SELECT COUNT(*) FROM chunks WHERE source = ? AND thread_id = ?",
+                    (source, thread_id)
+                )
+                row = cursor.fetchone()
+                return row[0] if row else 1
+        except Exception:
+            return 1
+
     def get_chunk(self, chunk_id):
         """
         Возвращает детальную информацию о конкретном чанке по его ID.
@@ -121,7 +140,7 @@ class FTSSearcher:
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
-        sql = "SELECT chunk_id, thread_id, thread_title, url, chunk_index, text, metadata_json FROM chunks WHERE chunk_id = ?"
+        sql = "SELECT chunk_id, thread_id, thread_title, url, chunk_index, text, metadata_json, source FROM chunks WHERE chunk_id = ?"
         try:
             cursor.execute(sql, (chunk_id,))
             row = cursor.fetchone()
@@ -130,6 +149,13 @@ class FTSSearcher:
                     metadata = json.loads(row["metadata_json"])
                 except Exception:
                     metadata = {}
+                
+                source = row["source"]
+                thread_title = row["thread_title"]
+                thread_id = row["thread_id"]
+                
+                total_count = self._get_total_count(cursor, source, thread_id, thread_title)
+                
                 return {
                     "id": row["chunk_id"],
                     "thread_id": row["thread_id"],
@@ -137,7 +163,8 @@ class FTSSearcher:
                     "url": row["url"],
                     "chunk_index": row["chunk_index"],
                     "text": row["text"],
-                    "metadata": metadata
+                    "metadata": metadata,
+                    "total_count": total_count
                 }
         except Exception as e:
             print(f"[!] Ошибка получения чанка {chunk_id}: {e}")
@@ -211,6 +238,9 @@ class FTSSearcher:
                     meta = json.loads(row["metadata_json"])
                 except Exception:
                     meta = {}
+                    
+                total_count = self._get_total_count(cursor, source, thread_id, thread_title)
+                
                 return {
                     "id": row["chunk_id"],
                     "thread_id": row["thread_id"],
@@ -218,7 +248,8 @@ class FTSSearcher:
                     "url": row["url"],
                     "chunk_index": row["chunk_index"],
                     "text": row["text"],
-                    "metadata": meta
+                    "metadata": meta,
+                    "total_count": total_count
                 }
         except Exception as e:
             print(f"[!] Ошибка навигации по чанку {current_chunk_id}: {e}")

@@ -9,11 +9,28 @@ class LLMClient:
     def __init__(self):
         self.config_mgr = ConfigManager()
 
+    def get_api_base(self):
+        """
+        Возвращает адрес активного провайдера LLM (LM Studio или Ollama).
+        """
+        provider = self.config_mgr.get("LLM_PROVIDER", self.config_mgr.get("provider", "lmstudio"))
+        providers = self.config_mgr.get("LLM_PROVIDERS", self.config_mgr.get("providers", {}))
+        
+        if isinstance(providers, dict) and provider in providers:
+            url = providers[provider].get("url")
+            if url:
+                return url
+                
+        # Резервный поиск по плоским ключам
+        if provider == "ollama":
+            return self.config_mgr.get("OLLAMA_API_BASE", "http://localhost:11434/v1")
+        return self.config_mgr.get("LM_STUDIO_API_BASE", "http://localhost:1234/v1")
+
     def _get_loaded_model_name(self):
         """
-        Запрашивает список активных моделей из LM Studio.
+        Запрашивает список активных моделей из LM Studio или Ollama.
         """
-        api_base = self.config_mgr.get("LM_STUDIO_API_BASE", "http://localhost:1234/v1")
+        api_base = self.get_api_base()
         models_url = f"{api_base.rstrip('/')}/models"
         try:
             response = requests.get(models_url, timeout=3)
@@ -25,6 +42,15 @@ class LLMClient:
         except Exception:
             pass
         return "google/gemma-4-12b-qat"
+
+    def get_model_name(self):
+        """
+        Возвращает имя модели из настроек (LLM_MODEL) или автоопределяет активную.
+        """
+        configured_model = self.config_mgr.get("LLM_MODEL")
+        if configured_model:
+            return configured_model
+        return self._get_loaded_model_name()
 
     def build_prompt(self, query, documents, strict_mode=False, show_reasoning=False):
         """
@@ -142,9 +168,9 @@ class LLMClient:
         """
         Генерирует ответ в виде потока чанков (SSE).
         """
-        api_base = self.config_mgr.get("LM_STUDIO_API_BASE", "http://localhost:1234/v1")
+        api_base = self.get_api_base()
         api_url = f"{api_base.rstrip('/')}/chat/completions"
-        model_name = self._get_loaded_model_name()
+        model_name = self.get_model_name()
         
         payload = {
             "model": model_name,
@@ -158,7 +184,7 @@ class LLMClient:
         }
         
         try:
-            response = requests.post(api_url, json=payload, stream=True, timeout=300)
+            response = requests.post(api_url, json=payload, stream=True, timeout=900)
             response.raise_for_status()
             
             for line in response.iter_lines():
@@ -173,25 +199,27 @@ class LLMClient:
                         data = json.loads(data_json)
                         if "error" in data:
                             error_msg = data["error"].get("message", str(data["error"]))
-                            raise Exception(f"Ошибка от LM Studio: {error_msg}")
+                            raise Exception(f"Ошибка от LM Studio/Ollama: {error_msg}")
                         delta = data.get("choices", [{}])[0].get("delta", {})
                         content = delta.get("content", "") or delta.get("reasoning_content", "")
                         if content:
                             yield content
                     except Exception as e:
-                        if "Ошибка от LM Studio" in str(e):
+                        if "Ошибка от LM Studio/Ollama" in str(e):
                             raise e
                         pass
         except Exception as e:
-            yield f"\n[!] Ошибка генерации ответа LLM: {e}\nУбедитесь, что сервер LM Studio запущен на порту {api_base} и контекстное окно модели достаточно для объема запроса."
+            provider = self.config_mgr.get("LLM_PROVIDER", "lmstudio")
+            provider_name = "Ollama" if provider == "ollama" else "LM Studio"
+            yield f"\n[!] Ошибка генерации ответа LLM: {e}\nУбедитесь, что сервер {provider_name} запущен по адресу {api_base} и контекстное окно модели достаточно для объема запроса."
 
     def translate_text(self, text: str, target_lang: str) -> str:
         """
         Translates a given text into target_lang (e.g. 'en', 'ru', 'de') using the local LLM.
         """
-        api_base = self.config_mgr.get("LM_STUDIO_API_BASE", "http://localhost:1234/v1")
+        api_base = self.get_api_base()
         api_url = f"{api_base.rstrip('/')}/chat/completions"
-        model_name = self._get_loaded_model_name()
+        model_name = self.get_model_name()
         
         # Select prompt based on target language for better local model alignment
         if target_lang.lower() == "ru":
@@ -236,7 +264,7 @@ class LLMClient:
         print(f"[*] Payload sent to LM Studio: {json.dumps(payload, ensure_ascii=False)[:300]}...")
         
         try:
-            response = requests.post(api_url, json=payload, timeout=90)
+            response = requests.post(api_url, json=payload, timeout=300)
             response.raise_for_status()
             data = response.json()
             print(f"[*] LM Studio API Response Status: {response.status_code}")

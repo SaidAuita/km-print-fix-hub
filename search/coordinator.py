@@ -82,9 +82,9 @@ class SearchCoordinator:
             import requests
             from llm.client import LLMClient
             client = LLMClient()
-            api_base = client.config_mgr.get("LM_STUDIO_API_BASE", "http://localhost:1234/v1")
+            api_base = client.get_api_base()
             api_url = f"{api_base.rstrip('/')}/chat/completions"
-            model_name = client._get_loaded_model_name()
+            model_name = client.get_model_name()
             
             payload = {
                 "model": model_name,
@@ -96,7 +96,7 @@ class SearchCoordinator:
                 "max_tokens": 15,
                 "stream": False
             }
-            response = requests.post(api_url, json=payload, timeout=2.0)
+            response = requests.post(api_url, json=payload, timeout=15.0)
             if response.status_code == 200:
                 translation = response.json()["choices"][0]["message"]["content"].strip()
                 translation = translation.strip('"').strip("'").strip()
@@ -132,9 +132,9 @@ class SearchCoordinator:
             from llm.client import LLMClient
             import json
             client = LLMClient()
-            api_base = client.config_mgr.get("LM_STUDIO_API_BASE", "http://localhost:1234/v1")
+            api_base = client.get_api_base()
             api_url = f"{api_base.rstrip('/')}/chat/completions"
-            model_name = client._get_loaded_model_name()
+            model_name = client.get_model_name()
             
             prompt = (
                 "Translate the user's technical search query into BOTH English and Russian. "

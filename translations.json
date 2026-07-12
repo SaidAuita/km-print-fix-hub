@@ -2,7 +2,7 @@
     "ru": {
         "lang_code": "ru",
         "lang_name": "Русский",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-09)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
         "active_model": "Модель",
         "knowledge_base": "База знаний",
         "search_diagnostics": "Диагностика поиска (Debug)",
@@ -48,7 +48,10 @@
         "reasoning_label": "Ход мыслей ассистента:",
         "generating_response": "Генерация ответа моделью...",
         "settings_title": "Настройки системы RAG",
+        "settings_llm_provider": "Провайдер LLM",
         "settings_api_base": "LM Studio API Base",
+        "settings_ollama_api_base": "Ollama API Base",
+        "settings_llm_model": "Название модели LLM (или пусто для авто)",
         "settings_embedding_provider": "Провайдер эмбеддингов",
         "settings_embedding_model": "Модель эмбеддингов в LM Studio",
         "settings_fts_candidates": "Кандидатов FTS5",
@@ -173,7 +176,7 @@
     "en": {
         "lang_code": "en",
         "lang_name": "English",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-09)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
         "active_model": "Model",
         "knowledge_base": "Knowledge Base",
         "search_diagnostics": "Search Diagnostics (Debug)",
@@ -219,7 +222,10 @@
         "reasoning_label": "Assistant's thoughts:",
         "generating_response": "Generating response...",
         "settings_title": "RAG System Settings",
+        "settings_llm_provider": "LLM Provider",
         "settings_api_base": "LM Studio API Base",
+        "settings_ollama_api_base": "Ollama API Base",
+        "settings_llm_model": "LLM Model Name (or empty for auto)",
         "settings_embedding_provider": "Embedding Provider",
         "settings_embedding_model": "Embedding Model in LM Studio",
         "settings_fts_candidates": "FTS5 Candidates",
@@ -344,7 +350,7 @@
     "de": {
         "lang_code": "de",
         "lang_name": "Deutsch",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-09)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
         "active_model": "Modell",
         "knowledge_base": "Wissensdatenbank",
         "search_diagnostics": "Suchdiagnose (Debug)",
@@ -515,7 +521,7 @@
     "fr": {
         "lang_code": "fr",
         "lang_name": "Français",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-09)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
         "active_model": "Modèle",
         "knowledge_base": "Base de connaissances",
         "search_diagnostics": "Diagnostic de recherche (Debug)",
@@ -686,7 +692,7 @@
     "es": {
         "lang_code": "es",
         "lang_name": "Español",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-09)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
         "active_model": "Modelo",
         "knowledge_base": "Base de conocimientos",
         "search_diagnostics": "Diagnóstico de búsqueda (Debug)",
@@ -857,7 +863,7 @@
     "it": {
         "lang_code": "it",
         "lang_name": "Italiano",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-09)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
         "active_model": "Modello",
         "knowledge_base": "Knowledge Base",
         "search_diagnostics": "Diagnostica di ricerca (Debug)",
@@ -1028,7 +1034,7 @@
     "zh": {
         "lang_code": "zh",
         "lang_name": "中文",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-09)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
         "active_model": "型号",
         "knowledge_base": "知识库",
         "search_diagnostics": "搜索诊断 (Debug)",
@@ -1199,7 +1205,7 @@
     "ja": {
         "lang_code": "ja",
         "lang_name": "日本語",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-09)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
         "active_model": "モデル",
         "knowledge_base": "ナレッジベース",
         "search_diagnostics": "検索診断 (デバッグ)",
@@ -1370,7 +1376,7 @@
     "pt": {
         "lang_code": "pt",
         "lang_name": "Português",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-09)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
         "active_model": "Modelo",
         "knowledge_base": "Base de Conhecimento",
         "search_diagnostics": "Diagnóstico de Busca (Debug)",
@@ -1524,7 +1530,7 @@
     "tr": {
         "lang_code": "tr",
         "lang_name": "Türkçe",
-        "title": "KM Print Fix Hub v 1.00 (2026-07-09)",
+        "title": "KM Print Fix Hub v 1.00 (2026-07-10)",
         "active_model": "Model",
         "knowledge_base": "Bilgi Bankası",
         "search_diagnostics": "Arama Teşhisi (Debug)",

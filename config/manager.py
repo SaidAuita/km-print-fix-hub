@@ -19,7 +19,19 @@ class ConfigManager:
         self.defaults = {
             "EMBEDDING_PROVIDER": getattr(config, 'EMBEDDING_PROVIDER', 'mock'),
             "EMBEDDING_MODEL": getattr(config, 'EMBEDDING_MODEL', 'nomic-ai/nomic-embed-text-v1.5-GGUF'),
+            "LLM_PROVIDER": getattr(config, 'LLM_PROVIDER', 'lmstudio'),
+            "LLM_MODEL": getattr(config, 'LLM_MODEL', ''),
             "LM_STUDIO_API_BASE": getattr(config, 'LM_STUDIO_API_BASE', 'http://localhost:1234/v1'),
+            "OLLAMA_API_BASE": getattr(config, 'OLLAMA_API_BASE', 'http://localhost:11434/v1'),
+            "LLM_PROVIDERS": getattr(config, 'LLM_PROVIDERS', {
+                "lmstudio": {"url": "http://localhost:1234/v1"},
+                "ollama": {"url": "http://localhost:11434/v1"}
+            }),
+            "provider": getattr(config, 'provider', 'lmstudio'),
+            "providers": getattr(config, 'providers', {
+                "lmstudio": {"url": "http://localhost:1234/v1"},
+                "ollama": {"url": "http://localhost:11434/v1"}
+            }),
             "VECTOR_STORE_TYPE": getattr(config, 'VECTOR_STORE_TYPE', 'simple'),
             "COLORPRINTING_URL": getattr(config, 'COLORPRINTING_URL', 'https://www.colorprintingforum.com/community/konica-minolta-color-laser-printer-color-copier/'),
             "PRINTPLANET_URL": getattr(config, 'PRINTPLANET_URL', 'https://printplanet.com/forums/digital-printing-discussion.37/'),

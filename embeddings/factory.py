@@ -16,6 +16,9 @@ def get_embeddings_provider(provider=None):
     elif provider_clean == "lm-studio":
         from embeddings.lm_studio import LMStudioEmbeddings
         return LMStudioEmbeddings()
+    elif provider_clean == "ollama":
+        from embeddings.ollama import OllamaEmbeddings
+        return OllamaEmbeddings()
     elif provider_clean == "huggingface":
         from embeddings.huggingface import HuggingFaceEmbeddings
         return HuggingFaceEmbeddings()

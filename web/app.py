@@ -21,7 +21,7 @@ from search.coordinator import SearchCoordinator
 from llm.client import LLMClient
 from history.manager import HistoryManager
 
-app = FastAPI(title="KM Print Fix Hub v 1.00 (2026-07-09)")
+app = FastAPI(title="KM Print Fix Hub v 1.00 (2026-07-10)")
 
 # Настройка путей
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -108,7 +108,7 @@ history_mgr = HistoryManager(db_path=os.path.join(BASE_DIR, "history.db"))
 async def read_root(request: Request):
     history = history_mgr.get_history()
     settings = config_mgr.get_all()
-    loaded_model = llm_client._get_loaded_model_name()
+    loaded_model = llm_client.get_model_name()
     
     lang = settings.get("LAST_LANG", "ru")
     t = translations.get(lang, translations.get("ru", {}))
@@ -274,6 +274,37 @@ async def update_settings(settings: dict):
     if config_mgr.save():
         return {"status": "success", "message": "Настройки успешно сохранены"}
     raise HTTPException(status_code=500, detail="Не удалось сохранить настройки в файл")
+
+@app.get("/api/models")
+async def get_available_models(provider: str = None, api_base: str = None):
+    """
+    Returns a list of all available models from the specified or active LLM provider.
+    """
+    if not provider:
+        provider = config_mgr.get("LLM_PROVIDER", "lmstudio")
+    if not api_base:
+        if provider == "ollama":
+            api_base = config_mgr.get("OLLAMA_API_BASE", "http://localhost:11434/v1")
+        else:
+            api_base = config_mgr.get("LM_STUDIO_API_BASE", "http://localhost:1234/v1")
+            
+    # Ensure Ollama has the /v1 prefix for listing models if it points to native port
+    if provider == "ollama":
+        if not api_base.endswith("/v1") and not api_base.endswith("/v1/"):
+            api_base = f"{api_base.rstrip('/')}/v1"
+            
+    models_url = f"{api_base.rstrip('/')}/models"
+    try:
+        import requests
+        response = requests.get(models_url, timeout=3)
+        if response.status_code == 200:
+            data = response.json()
+            models = data.get("data", [])
+            return {"models": [m.get("id") for m in models]}
+    except Exception as e:
+        print(f"[!] Error fetching models list from {models_url}: {e}")
+        
+    return {"models": []}
 
 @app.post("/history/delete/{chat_id}")
 async def delete_history_item(chat_id: int):

@@ -525,8 +525,44 @@ function toggleSettingsModal(show) {
     const modal = document.getElementById("settingsModal");
     if (show) {
         modal.classList.remove("hidden");
+        if (typeof updateProviderInputs === "function") {
+            updateProviderInputs();
+        }
+        if (typeof refreshModelList === "function") {
+            refreshModelList();
+        }
     } else {
         modal.classList.add("hidden");
+    }
+}
+
+// Запрос списка доступных моделей с сервера
+async function refreshModelList() {
+    const providerSelect = document.getElementById("llmProviderSelect");
+    const lmstudioUrl = document.getElementById("lmstudioUrlInput").value.trim();
+    const ollamaUrl = document.getElementById("ollamaUrlInput").value.trim();
+    const datalist = document.getElementById("llmModelsDatalist");
+    if (!datalist) return;
+    
+    datalist.innerHTML = "";
+    
+    const provider = providerSelect.value;
+    const apiBase = provider === "ollama" ? ollamaUrl : lmstudioUrl;
+    
+    try {
+        const response = await fetch(`/api/models?provider=${provider}&api_base=${encodeURIComponent(apiBase)}`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.models && data.models.length > 0) {
+                data.models.forEach(model => {
+                    const option = document.createElement("option");
+                    option.value = model;
+                    datalist.appendChild(option);
+                });
+            }
+        }
+    } catch (err) {
+        console.error("Error fetching model list:", err);
     }
 }
 
@@ -540,6 +576,26 @@ async function saveSettings(e) {
     formData.forEach((value, key) => {
         settings[key] = value;
     });
+    
+    // Явно собираем настройки провайдеров (включая readonly поля)
+    const provider = document.getElementById("llmProviderSelect").value;
+    const lmstudioUrl = document.getElementById("lmstudioUrlInput").value.trim();
+    const ollamaUrl = document.getElementById("ollamaUrlInput").value.trim();
+    const llmModel = document.getElementById("llmModelInput").value.trim();
+    
+    settings["LLM_PROVIDER"] = provider;
+    settings["provider"] = provider;
+    settings["LM_STUDIO_API_BASE"] = lmstudioUrl;
+    settings["OLLAMA_API_BASE"] = ollamaUrl;
+    settings["LLM_MODEL"] = llmModel;
+    settings["LLM_PROVIDERS"] = {
+        "lmstudio": { "url": lmstudioUrl },
+        "ollama": { "url": ollamaUrl }
+    };
+    settings["providers"] = {
+        "lmstudio": { "url": lmstudioUrl },
+        "ollama": { "url": ollamaUrl }
+    };
     
     settings["LAST_DEBUG_MODE"] = document.getElementById("debugToggleModal").checked;
     settings["LAST_SHOW_REASONING"] = document.getElementById("showReasoningCheckModal").checked;
@@ -822,12 +878,20 @@ function updateNavControlsState() {
     const isOfficial = currentActiveChunk.metadata && currentActiveChunk.metadata.source === "official";
     const labelSpan = document.getElementById("navLabelPage");
     const pageInput = document.getElementById("navPageInput");
+    const totalSpan = document.getElementById("navTotalCount");
+    
+    const totalCount = currentActiveChunk.total_count || 1;
+    const isRu = (window.TRANSLATIONS && window.TRANSLATIONS.lang_code === "ru");
+    
+    if (totalSpan) {
+        totalSpan.innerHTML = `/ <span class="text-white font-semibold">${totalCount}</span>`;
+    }
     
     if (isOfficial) {
-        labelSpan.textContent = (window.TRANSLATIONS && window.TRANSLATIONS.lang_code === "ru") ? "Стр" : "Page";
+        labelSpan.textContent = isRu ? "Стр" : "Page";
         pageInput.value = currentActiveChunk.metadata.page || 1;
     } else {
-        labelSpan.textContent = (window.TRANSLATIONS && window.TRANSLATIONS.lang_code === "ru") ? "Пост" : "Post";
+        labelSpan.textContent = isRu ? "Пост" : "Post";
         pageInput.value = currentActiveChunk.chunk_index || 1;
     }
 }

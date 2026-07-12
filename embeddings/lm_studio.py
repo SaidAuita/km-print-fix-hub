@@ -5,8 +5,11 @@ from embeddings.base import BaseEmbeddings
 
 class LMStudioEmbeddings(BaseEmbeddings):
     def __init__(self):
-        self.api_url = f"{config.LM_STUDIO_API_BASE.rstrip('/')}/embeddings"
-        self.model = config.EMBEDDING_MODEL
+        from config.manager import ConfigManager
+        config_mgr = ConfigManager()
+        api_base = config_mgr.get("LM_STUDIO_API_BASE", "http://localhost:1234/v1")
+        self.api_url = f"{api_base.rstrip('/')}/embeddings"
+        self.model = config_mgr.get("EMBEDDING_MODEL", config.EMBEDDING_MODEL)
         
     def embed_documents(self, texts):
         try:

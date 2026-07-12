@@ -26,12 +26,22 @@ RAG (Retrieval-Augmented Generation) search engine and interactive technical sup
 
 ### 💻 Installation & Setup
 
-#### 1. Setup LM Studio (LLM Provider)
+#### 1. Setup LLM Provider (LM Studio or Ollama)
+
+**Option A: LM Studio**
 1. Install [LM Studio](https://lmstudio.ai/).
 2. Search and download the recommended model: `qwen/qwen3-4b-2507`.
 3. In the "Local Server" tab, select the model and click **Start Server**.
 4. > [!IMPORTANT]
-   > Ensure that the **Context Length** in LM Studio is set to **20,000** or higher to accommodate RAG search matches.
+   > Ensure that the **Context Length** in LM Studio is set to **16,000** or higher to accommodate RAG search matches.
+
+**Option B: Ollama**
+1. Install [Ollama](https://ollama.com/).
+2. Pull the recommended model using your terminal:
+   ```bash
+   ollama pull Qwen3:4b
+   ```
+3. Open the application, open the **Settings** modal, select **Ollama** as your LLM Provider, and set the LLM Model Name to `Qwen3:4b`. You can also configure Ollama as your Embedding Provider (with model `nomic-embed-text`).
 
 #### 2. Install Python & Dependencies
 1. Install Python 3.10 or newer.
@@ -84,12 +94,22 @@ If a specific Konica Minolta model is missing from the dropdown or is not recogn
 
 ### 💻 Установка и запуск
 
-#### 1. Настройка LM Studio (Локальная LLM)
+#### 1. Настройка провайдера LLM (LM Studio или Ollama)
+
+**Вариант А: LM Studio**
 1. Установите [LM Studio](https://lmstudio.ai/).
 2. Скачайте и выберите рекомендованную модель: `qwen/qwen3-4b-2507`.
 3. Перейдите во вкладку "Local Server" и нажмите **Start Server**.
 4. > [!IMPORTANT]
-   > Обязательно выставите параметр **Context Length** (Размер контекста) в LM Studio на значение **20 000** или более.
+   > Обязательно выставите параметр **Context Length** (Размер контекста) в LM Studio на значение **16 000** или более.
+
+**Вариант Б: Ollama**
+1. Установите [Ollama](https://ollama.com/).
+2. Скачайте рекомендованную модель через терминал:
+   ```bash
+   ollama pull Qwen3:4b
+   ```
+3. Откройте приложение, перейдите в **Настройки**, выберите **Ollama** в качестве провайдера LLM и укажите название модели `Qwen3:4b`. Также вы можете использовать Ollama в качестве провайдера эмбеддингов (с моделью `nomic-embed-text`).
 
 #### 2. Установка Python и зависимостей
 1. Установите Python 3.10 или новее.
