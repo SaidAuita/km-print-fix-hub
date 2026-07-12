@@ -233,6 +233,7 @@ class ConfigManager:
             )),
             "LLM_TEMPERATURE": getattr(config, 'LLM_TEMPERATURE', 0.3),
             "LLM_MAX_TOKENS": getattr(config, 'LLM_MAX_TOKENS', 2048),
+            "LLM_CONTEXT_LENGTH": getattr(config, 'LLM_CONTEXT_LENGTH', 16000),
             "WEB_HOST": getattr(config, 'WEB_HOST', '127.0.0.1'),
             "WEB_PORT": getattr(config, 'WEB_PORT', 8000),
             "ENABLE_CONTEXT_OPTIMIZER": getattr(config, 'ENABLE_CONTEXT_OPTIMIZER', False),

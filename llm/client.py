@@ -183,6 +183,12 @@ class LLMClient:
             "stream": True
         }
         
+        provider = self.config_mgr.get("LLM_PROVIDER", "lmstudio")
+        if provider == "ollama":
+            payload["options"] = {
+                "num_ctx": self.config_mgr.get("LLM_CONTEXT_LENGTH", 16000)
+            }
+        
         try:
             response = requests.post(api_url, json=payload, stream=True, timeout=900)
             response.raise_for_status()
@@ -258,6 +264,12 @@ class LLMClient:
             "max_tokens": 1500,
             "stream": False
         }
+        
+        provider = self.config_mgr.get("LLM_PROVIDER", "lmstudio")
+        if provider == "ollama":
+            payload["options"] = {
+                "num_ctx": 4096
+            }
         
         print(f"[*] API Base: {api_base}")
         print(f"[*] Target model: {model_name}")

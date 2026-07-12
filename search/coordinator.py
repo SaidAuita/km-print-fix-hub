@@ -96,6 +96,12 @@ class SearchCoordinator:
                 "max_tokens": 15,
                 "stream": False
             }
+            
+            provider = client.config_mgr.get("LLM_PROVIDER", "lmstudio")
+            if provider == "ollama":
+                payload["options"] = {
+                    "num_ctx": 4096
+                }
             response = requests.post(api_url, json=payload, timeout=15.0)
             if response.status_code == 200:
                 translation = response.json()["choices"][0]["message"]["content"].strip()
@@ -153,6 +159,12 @@ class SearchCoordinator:
                 "max_tokens": 60,
                 "stream": False
             }
+            
+            provider = client.config_mgr.get("LLM_PROVIDER", "lmstudio")
+            if provider == "ollama":
+                payload["options"] = {
+                    "num_ctx": 4096
+                }
             response = requests.post(api_url, json=payload, timeout=3.0)
             if response.status_code == 200:
                 res_content = response.json()["choices"][0]["message"]["content"].strip()

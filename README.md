@@ -39,9 +39,9 @@ RAG (Retrieval-Augmented Generation) search engine and interactive technical sup
 1. Install [Ollama](https://ollama.com/).
 2. Pull the recommended model using your terminal:
    ```bash
-   ollama pull Qwen3:4b
+   ollama pull qwen2.5:4b
    ```
-3. Open the application, open the **Settings** modal, select **Ollama** as your LLM Provider, and set the LLM Model Name to `Qwen3:4b`. You can also configure Ollama as your Embedding Provider (with model `nomic-embed-text`).
+3. Open the application, open the **Settings** modal, select **Ollama** as your LLM Provider, and set the LLM Model Name to `qwen2.5:4b`. You can also configure Ollama as your Embedding Provider (with model `nomic-embed-text`).
 
 #### 2. Install Python & Dependencies
 1. Install Python 3.10 or newer.
@@ -107,9 +107,9 @@ If a specific Konica Minolta model is missing from the dropdown or is not recogn
 1. Установите [Ollama](https://ollama.com/).
 2. Скачайте рекомендованную модель через терминал:
    ```bash
-   ollama pull Qwen3:4b
+   ollama pull qwen2.5:4b
    ```
-3. Откройте приложение, перейдите в **Настройки**, выберите **Ollama** в качестве провайдера LLM и укажите название модели `Qwen3:4b`. Также вы можете использовать Ollama в качестве провайдера эмбеддингов (с моделью `nomic-embed-text`).
+3. Откройте приложение, перейдите в **Настройки**, выберите **Ollama** в качестве провайдера LLM и укажите название модели `qwen2.5:4b`. Также вы можете использовать Ollama в качестве провайдера эмбеддингов (с моделью `nomic-embed-text`).
 
 #### 2. Установка Python и зависимостей
 1. Установите Python 3.10 или новее.

@@ -122,6 +122,12 @@ def ask_llm(system_prompt, user_prompt, model_name):
         "stream": True
     }
     
+    provider = config_mgr.get("LLM_PROVIDER", "lmstudio")
+    if provider == "ollama":
+        payload["options"] = {
+            "num_ctx": config_mgr.get("LLM_CONTEXT_LENGTH", 16000)
+        }
+    
     try:
         response = requests.post(api_url, json=payload, stream=True, timeout=900)
         response.raise_for_status()
