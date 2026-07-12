@@ -105,8 +105,12 @@ def main():
     cursor.execute("SELECT COUNT(*) FROM chunks")
     total_count = cursor.fetchone()[0]
 
+    already_summarized = total_count - to_summarize_count
+
     print(f"[*] Всего записей в базе: {total_count}")
-    print(f"[*] Записей для сжатия: {to_summarize_count}")
+    if already_summarized > 0:
+        print(f"[+] Уже сжато в базе: {already_summarized} (будут пропущены)")
+    print(f"[*] Осталось сжать: {to_summarize_count}")
 
     if to_summarize_count == 0:
         print("[+] Все записи в базе уже сжаты! Завершение работы.")
@@ -134,18 +138,20 @@ def main():
             for future in as_completed(future_to_row):
                 chunk_id, summary, thread_title, error = future.result()
                 processed_count += 1
-                percent = (processed_count / to_summarize_count) * 100
+                
+                current_done = already_summarized + processed_count
+                percent = (current_done / total_count) * 100
                 
                 if error:
                     failed_count += 1
-                    print(f"[{processed_count}/{to_summarize_count}] [{percent:.1f}%] [!] Ошибка сжатия {chunk_id[:12]} ({thread_title[:25]}): {error}")
+                    print(f"[{current_done}/{total_count}] [{percent:.1f}%] [!] Ошибка сжатия {chunk_id[:12]} ({thread_title[:25]}): {error}")
                 else:
                     # Запись в БД происходит последовательно в главном потоке для предотвращения блокировок SQLite
                     try:
                         cursor.execute("UPDATE chunks SET summary = ? WHERE chunk_id = ?", (summary, chunk_id))
                         conn.commit()
                         success_count += 1
-                        print(f"[{processed_count}/{to_summarize_count}] [{percent:.1f}%] [+] Успешно сжат {chunk_id[:12]} ({thread_title[:25]})")
+                        print(f"[{current_done}/{total_count}] [{percent:.1f}%] [+] Успешно сжат {chunk_id[:12]} ({thread_title[:25]})")
                     except Exception as db_err:
                         print(f"[!] Ошибка записи в БД для {chunk_id[:12]}: {db_err}")
                         
