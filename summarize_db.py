@@ -19,7 +19,7 @@ from llm.client import LLMClient
 def process_chunk(row, api_url, model_name, provider):
     chunk_id, text, thread_title = row
     
-    # Строим промпт для сжатия
+    # Строим промпт для сжатия с жестким запретом на рассуждения (CoT)
     prompt = (
         "Сделай краткую техническую выжимку из этого обсуждения или документа о Konica Minolta на русском языке.\n"
         "Выдели только суть в строго следующем формате:\n"
@@ -27,6 +27,9 @@ def process_chunk(row, api_url, model_name, provider):
         "Причина: <возможные причины, если упомянуты, иначе оставить пустым>\n"
         "Решение: <способы решения, если указаны, иначе оставить пустым>\n"
         "Модели: <конкретные модели принтеров, если упомянуты, иначе оставить пустым>\n\n"
+        "ВАЖНО: Пиши СТРОГО только результат в указанном выше формате! "
+        "Категорически запрещено выводить любые предварительные рассуждения, размышления вслух, "
+        "пошаговый анализ или блок мыслей (Chain of Thought / <thought>).\n\n"
         f"Текст для сжатия:\n{text}"
     )
 
@@ -36,7 +39,7 @@ def process_chunk(row, api_url, model_name, provider):
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.1,
-        "max_tokens": 500,
+        "max_tokens": 800,
         "stream": False
     }
 
@@ -48,8 +51,14 @@ def process_chunk(row, api_url, model_name, provider):
     try:
         response = requests.post(api_url, json=payload, timeout=90.0)
         response.raise_for_status()
-        data = response.json()
+        
+        # Безопасное декодирование UTF-8 для предотвращения проблем с кодировкой
+        data = json.loads(response.content.decode('utf-8'))
         summary = data["choices"][0]["message"]["content"].strip()
+        
+        if not summary or len(summary) < 15:
+            return chunk_id, None, thread_title, "LLM returned empty summary (exhausted by reasoning/CoT)"
+            
         return chunk_id, summary, thread_title, None
     except Exception as e:
         return chunk_id, None, thread_title, str(e)
