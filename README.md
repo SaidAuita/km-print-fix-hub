@@ -21,6 +21,7 @@ RAG (Retrieval-Augmented Generation) search engine and interactive technical sup
 * **Machine Logbook**: A localized maintenance logbook module enabling operators to record faults, solution details, replaced parts & counters, perform dynamic cross-linking between entries, and manage zip backups.
 * **Multi-Language Support**: Complete interface translation in 10 languages and bilingual query translation (queries in any language are matched against English and Russian databases).
 * **Anonymization Engine**: Light version replaces posters' names with generic identifiers to maintain privacy.
+* **Dual Context Modes (Quality / Speed)**: Choose between full text context (Quality Mode) or brief AI-generated technical summaries (Fast CPU Mode). Fast mode reduces context size by 2x-5x, providing massive speedups on low-spec/CPU-only machines.
 
 ---
 
@@ -89,6 +90,7 @@ If a specific Konica Minolta model is missing from the dropdown or is not recogn
 * **Machine Logbook (Бортовой журнал обслуживания)**: Локальный модуль фиксации ремонтов, позволяющий вести учет неисправностей, замененных деталей и счетчиков, связывать записи между собой и создавать резервные копии журналов.
 * **Многоязычность**: Локализация интерфейса на 10 языков и автоматический перевод поисковых запросов.
 * **Анонимизация данных**: Light-версия заменяет реальные имена пользователей на порядковые маркеры для конфиденциальности.
+* **Двойной режим контекста (Качество / Скорость)**: Возможность выбора между передачей полной версии постов (Качество) и кратких технических выжимок (Скорость). Быстрый режим сокращает объем контекста в 2–5 раз, обеспечивая высокую скорость генерации на слабых ПК и CPU.
 
 ---
 

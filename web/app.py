@@ -21,7 +21,7 @@ from search.coordinator import SearchCoordinator
 from llm.client import LLMClient
 from history.manager import HistoryManager
 
-app = FastAPI(title="KM Print Fix Hub v 1.00 (2026-07-12)")
+app = FastAPI(title="KM Print Fix Hub v 1.10 (2026-07-12)")
 
 # Настройка путей
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
