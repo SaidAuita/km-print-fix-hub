@@ -487,7 +487,7 @@
                                 <span>{{ t.settings_auto_context_size }}</span>
                             </label>
                         </div>
-                        <input type="number" id="maxContextWordsInput" name="MAX_CONTEXT_SIZE_WORDS" value="{{ settings.MAX_CONTEXT_SIZE_WORDS }}" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200 transition-all {% if settings.LAST_AUTO_CONTEXT_SIZE or settings.LAST_AUTO_CONTEXT_SIZE is not defined %}opacity-60 cursor-not-allowed{% endif %}" {% if settings.LAST_AUTO_CONTEXT_SIZE or settings.LAST_AUTO_CONTEXT_SIZE is not defined %}readonly{% endif %}>
+                        <input type="number" id="maxContextWordsInput" name="MAX_CONTEXT_SIZE_WORDS" value="{% if settings.LAST_AUTO_CONTEXT_SIZE or settings.LAST_AUTO_CONTEXT_SIZE is not defined %}{% if settings.LLM_CONTEXT_MODE == 'quality' %}4000{% else %}1000{% endif %}{% else %}{{ settings.MAX_CONTEXT_SIZE_WORDS }}{% endif %}" data-manual-value="{{ settings.MAX_CONTEXT_SIZE_WORDS | default(3000) }}" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200 transition-all {% if settings.LAST_AUTO_CONTEXT_SIZE or settings.LAST_AUTO_CONTEXT_SIZE is not defined %}opacity-60 cursor-not-allowed{% endif %}" {% if settings.LAST_AUTO_CONTEXT_SIZE or settings.LAST_AUTO_CONTEXT_SIZE is not defined %}readonly{% endif %}>
                         <div id="lowContextWarning" class="hidden text-[10px] text-yellow-500 mt-1">
                             {{ t.warning_low_context_quality }}
                         </div>
@@ -793,6 +793,10 @@
             if (!autoCheck || !wordsInput || !modeSelect || !warningBlock) return;
             
             if (autoCheck.checked) {
+                // If it was editable, save whatever the user typed before checking
+                if (!wordsInput.hasAttribute("readonly")) {
+                    wordsInput.setAttribute("data-manual-value", wordsInput.value);
+                }
                 wordsInput.setAttribute("readonly", "true");
                 wordsInput.classList.add("opacity-60", "cursor-not-allowed");
                 
@@ -805,6 +809,12 @@
             } else {
                 wordsInput.removeAttribute("readonly");
                 wordsInput.classList.remove("opacity-60", "cursor-not-allowed");
+                
+                // Restore manual value
+                const manualVal = wordsInput.getAttribute("data-manual-value");
+                if (manualVal !== null) {
+                    wordsInput.value = manualVal;
+                }
             }
             
             // Check warning conditions (only show warning in quality mode if context words < 3000)
@@ -823,7 +833,14 @@
             const modeSelect = document.getElementById("settingsContextModeSelect");
             
             if (autoCheck) autoCheck.addEventListener("change", updateContextSizeAutoLogic);
-            if (wordsInput) wordsInput.addEventListener("input", updateContextSizeAutoLogic);
+            if (wordsInput) {
+                wordsInput.addEventListener("input", function() {
+                    if (autoCheck && !autoCheck.checked) {
+                        wordsInput.setAttribute("data-manual-value", wordsInput.value);
+                    }
+                    updateContextSizeAutoLogic();
+                });
+            }
             if (modeSelect) modeSelect.addEventListener("change", updateContextSizeAutoLogic);
             
             // Run once initially

@@ -628,6 +628,16 @@ async function saveSettings(e) {
     settings["LAST_DIRECT_FORUM_LINKS"] = document.getElementById("directForumLinksCheckModal").checked;
     settings["LAST_AUTO_CONTEXT_SIZE"] = document.getElementById("autoContextSizeCheck").checked;
     
+    const autoCheck = document.getElementById("autoContextSizeCheck");
+    const wordsInput = document.getElementById("maxContextWordsInput");
+    if (autoCheck && wordsInput) {
+        if (autoCheck.checked) {
+            settings["MAX_CONTEXT_SIZE_WORDS"] = parseInt(wordsInput.getAttribute("data-manual-value")) || 3000;
+        } else {
+            settings["MAX_CONTEXT_SIZE_WORDS"] = parseInt(wordsInput.value) || 3000;
+        }
+    }
+    
     const contextModeSelect = form.querySelector("[name='LLM_CONTEXT_MODE']");
     if (contextModeSelect) {
         settings["LAST_CONTEXT_MODE"] = contextModeSelect.value;
@@ -840,12 +850,6 @@ async function toggleContextMode(currentMode, isAuto) {
         LLM_CONTEXT_MODE: newMode,
         LAST_CONTEXT_MODE: newMode 
     };
-    
-    if (isAuto) {
-        // Automatically set size: Quality gets 4000, Speed/OFF gets 1000
-        const autoVal = (newMode === "quality") ? 4000 : 1000;
-        settingsUpdate["MAX_CONTEXT_SIZE_WORDS"] = autoVal;
-    }
     
     await saveLastSelection(settingsUpdate);
     window.location.reload();
