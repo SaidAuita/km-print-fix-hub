@@ -172,7 +172,7 @@
 
                     <!-- RAG Context Mode Indicator -->
                     <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#142036] border border-[#1e293b] text-xs font-semibold select-none cursor-pointer hover:bg-[#1c2e4d] transition-all" 
-                         onclick="toggleContextMode('{{ settings.LLM_CONTEXT_MODE | default('quality') }}', {{ 'true' if settings.LAST_AUTO_CONTEXT_SIZE or settings.LAST_AUTO_CONTEXT_SIZE is not defined else 'false' }})" 
+                         onclick="toggleContextMode('{{ settings.LLM_CONTEXT_MODE | default('quality') }}')" 
                          title="{{ t.settings_context_mode }} ({% if settings.LAST_LANG == 'ru' %}Нажмите для переключения{% else %}Click to toggle{% endif %})">
                         <span class="text-gray-400">RAG:</span>
                         {% if settings.LLM_CONTEXT_MODE == 'fast' %}
@@ -479,18 +479,13 @@
 
                 <!-- Context words, temperature -->
                 <div class="grid grid-cols-3 gap-4">
-                    <div class="col-span-2">
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="block text-xs font-semibold text-gray-400">{{ t.settings_max_words }}</label>
-                            <label class="flex items-center gap-1 cursor-pointer select-none text-[10px] text-gray-400 hover:text-gray-200">
-                                <input type="checkbox" id="autoContextSizeCheck" {% if settings.LAST_AUTO_CONTEXT_SIZE or settings.LAST_AUTO_CONTEXT_SIZE is not defined %}checked{% endif %} class="rounded border-gray-700 bg-gray-800 text-brand-500 focus:ring-brand-500 w-3 h-3">
-                                <span>{{ t.settings_auto_context_size }}</span>
-                            </label>
-                        </div>
-                        <input type="number" id="maxContextWordsInput" name="MAX_CONTEXT_SIZE_WORDS" value="{% if settings.LAST_AUTO_CONTEXT_SIZE or settings.LAST_AUTO_CONTEXT_SIZE is not defined %}{% if settings.LLM_CONTEXT_MODE == 'quality' %}4000{% else %}1000{% endif %}{% else %}{{ settings.MAX_CONTEXT_SIZE_WORDS }}{% endif %}" data-manual-value="{{ settings.MAX_CONTEXT_SIZE_WORDS | default(3000) }}" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200 transition-all {% if settings.LAST_AUTO_CONTEXT_SIZE or settings.LAST_AUTO_CONTEXT_SIZE is not defined %}opacity-60 cursor-not-allowed{% endif %}" {% if settings.LAST_AUTO_CONTEXT_SIZE or settings.LAST_AUTO_CONTEXT_SIZE is not defined %}readonly{% endif %}>
-                        <div id="lowContextWarning" class="hidden text-[10px] text-yellow-500 mt-1">
-                            {{ t.warning_low_context_quality }}
-                        </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">{{ t.settings_quality_words }}</label>
+                        <input type="number" id="qualityWordsInput" name="LLM_CONTEXT_QUALITY_WORDS" value="{{ settings.LLM_CONTEXT_QUALITY_WORDS | default(4000) }}" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">{{ t.settings_speed_words }}</label>
+                        <input type="number" id="speedWordsInput" name="LLM_CONTEXT_SPEED_WORDS" value="{{ settings.LLM_CONTEXT_SPEED_WORDS | default(1000) }}" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200 text-xs">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-400 mb-1">{{ t.settings_temperature }}</label>
@@ -783,69 +778,6 @@
                 refreshModelList();
             }
         }
-
-        function updateContextSizeAutoLogic() {
-            const autoCheck = document.getElementById("autoContextSizeCheck");
-            const wordsInput = document.getElementById("maxContextWordsInput");
-            const modeSelect = document.getElementById("settingsContextModeSelect");
-            const warningBlock = document.getElementById("lowContextWarning");
-            
-            if (!autoCheck || !wordsInput || !modeSelect || !warningBlock) return;
-            
-            if (autoCheck.checked) {
-                // If it was editable, save whatever the user typed before checking
-                if (!wordsInput.hasAttribute("readonly")) {
-                    wordsInput.setAttribute("data-manual-value", wordsInput.value);
-                }
-                wordsInput.setAttribute("readonly", "true");
-                wordsInput.classList.add("opacity-60", "cursor-not-allowed");
-                
-                // Auto set based on mode
-                if (modeSelect.value === "quality") {
-                    wordsInput.value = 4000;
-                } else {
-                    wordsInput.value = 1000;
-                }
-            } else {
-                wordsInput.removeAttribute("readonly");
-                wordsInput.classList.remove("opacity-60", "cursor-not-allowed");
-                
-                // Restore manual value
-                const manualVal = wordsInput.getAttribute("data-manual-value");
-                if (manualVal !== null) {
-                    wordsInput.value = manualVal;
-                }
-            }
-            
-            // Check warning conditions (only show warning in quality mode if context words < 3000)
-            const wordsVal = parseInt(wordsInput.value) || 0;
-            if (modeSelect.value === "quality" && wordsVal < 3000) {
-                warningBlock.classList.remove("hidden");
-            } else {
-                warningBlock.classList.add("hidden");
-            }
-        }
-
-        // Initialize event listeners when DOM content is loaded
-        document.addEventListener("DOMContentLoaded", function() {
-            const autoCheck = document.getElementById("autoContextSizeCheck");
-            const wordsInput = document.getElementById("maxContextWordsInput");
-            const modeSelect = document.getElementById("settingsContextModeSelect");
-            
-            if (autoCheck) autoCheck.addEventListener("change", updateContextSizeAutoLogic);
-            if (wordsInput) {
-                wordsInput.addEventListener("input", function() {
-                    if (autoCheck && !autoCheck.checked) {
-                        wordsInput.setAttribute("data-manual-value", wordsInput.value);
-                    }
-                    updateContextSizeAutoLogic();
-                });
-            }
-            if (modeSelect) modeSelect.addEventListener("change", updateContextSizeAutoLogic);
-            
-            // Run once initially
-            updateContextSizeAutoLogic();
-        });
 
         function togglePDFsModal(show) {
             const modal = document.getElementById("pdfsModal");

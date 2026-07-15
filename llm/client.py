@@ -56,12 +56,11 @@ class LLMClient:
         """
         Формирует контекст с ограничением размера по словам и строит промпт.
         """
-        is_auto = self.config_mgr.get("LAST_AUTO_CONTEXT_SIZE", True)
-        if is_auto:
-            context_mode = self.config_mgr.get("LLM_CONTEXT_MODE", "quality")
-            max_words = 4000 if context_mode == "quality" else 1000
+        context_mode = self.config_mgr.get("LLM_CONTEXT_MODE", "quality")
+        if context_mode == "quality":
+            max_words = self.config_mgr.get("LLM_CONTEXT_QUALITY_WORDS", 4000)
         else:
-            max_words = self.config_mgr.get("MAX_CONTEXT_SIZE_WORDS", 3000)
+            max_words = self.config_mgr.get("LLM_CONTEXT_SPEED_WORDS", 1000)
         
         context_parts = []
         current_words = 0

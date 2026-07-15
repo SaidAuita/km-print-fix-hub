@@ -41,6 +41,8 @@ class ConfigManager:
             "VECTOR_RESULTS_COUNT": getattr(config, 'VECTOR_RESULTS_COUNT', 25),
             "RERANKED_RESULTS_COUNT": getattr(config, 'RERANKED_RESULTS_COUNT', 10),
             "MAX_CONTEXT_SIZE_WORDS": getattr(config, 'MAX_CONTEXT_SIZE_WORDS', 3000),
+            "LLM_CONTEXT_QUALITY_WORDS": getattr(config, 'LLM_CONTEXT_QUALITY_WORDS', 4000),
+            "LLM_CONTEXT_SPEED_WORDS": getattr(config, 'LLM_CONTEXT_SPEED_WORDS', 1000),
             "SYSTEM_PROMPT_RU": getattr(config, 'SYSTEM_PROMPT_RU', (
                 "Ты — инженер технической поддержки Konica Minolta.\n"
                 "Отвечай ТОЛЬКО на русском языке.\n"
@@ -247,7 +249,6 @@ class ConfigManager:
             "LAST_ENABLE_CONTEXT_OPTIMIZER": False,
             "LAST_DIRECT_FORUM_LINKS": False,
             "LAST_CONTEXT_MODE": "quality",
-            "LAST_AUTO_CONTEXT_SIZE": True,
             "LAST_LANG": getattr(config, 'LAST_LANG', 'ru'),
         }
         self.settings = {}
