@@ -842,8 +842,8 @@ async function toggleContextMode(currentMode, isAuto) {
     };
     
     if (isAuto) {
-        // Automatically set size: Quality gets 3000, Speed/OFF gets 1000
-        const autoVal = (newMode === "quality") ? 3000 : 1000;
+        // Automatically set size: Quality gets 4000, Speed/OFF gets 1000
+        const autoVal = (newMode === "quality") ? 4000 : 1000;
         settingsUpdate["MAX_CONTEXT_SIZE_WORDS"] = autoVal;
     }
     
