@@ -54,7 +54,7 @@ RAG (Retrieval-Augmented Generation) search engine and interactive technical sup
 #### 3. Database Download (Mega.nz)
 Since database indices are large, they are hosted externally.
 1. Download the required database ZIP:
-   * **[Mega.nz Link for Light/Anonymized Index (Index_anon.zip)](https://mega.nz/file/Oh52lJaT#e8kGp7mMv-71iP6GZdN3N7XS0bUVuFT_miDUbYBDMWw)**
+   * **[Mega.nz Link for Light/Anonymized Index (Index_anon.zip)](https://mega.nz/folder/XhRyHR7Q#8Bs86qJLEY65yMJzzQSKrA)**
 2. Extract the index contents into the `Index/` folder in the project root.
 
 #### 4. Launching the App
@@ -123,7 +123,7 @@ If a specific Konica Minolta model is missing from the dropdown or is not recogn
 #### 3. Загрузка базы данных (Mega.nz)
 Файлы индексов базы знаний имеют большой объем и скачиваются отдельно.
 1. Скачайте необходимый архив базы данных:
-   * **[Ссылка на Mega.nz для Light (обезличенный индекс) (Index_anon.zip)](https://mega.nz/file/Oh52lJaT#e8kGp7mMv-71iP6GZdN3N7XS0bUVuFT_miDUbYBDMWw)**
+   * **[Ссылка на Mega.nz для Light (обезличенный индекс) (Index_anon.zip)](https://mega.nz/folder/XhRyHR7Q#8Bs86qJLEY65yMJzzQSKrA)**
 2. Распакуйте содержимое архива индексов в папку `Index/` в корне проекта.
 
 #### 4. Запуск приложения

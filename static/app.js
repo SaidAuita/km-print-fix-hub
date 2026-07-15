@@ -822,6 +822,15 @@ async function changeLanguage(lang) {
     window.location.reload();
 }
 
+async function toggleContextMode(currentMode) {
+    const newMode = (currentMode === "fast") ? "quality" : "fast";
+    await saveLastSelection({ 
+        LLM_CONTEXT_MODE: newMode,
+        LAST_CONTEXT_MODE: newMode 
+    });
+    window.location.reload();
+}
+
 // Навигация и перелистывание чанков в модальном окне
 async function navigateChunk(direction) {
     if (!currentActiveChunk) return;

@@ -175,7 +175,9 @@
         "settings_context_mode": "Режим контекста RAG",
         "context_mode_quality": "Качество (полный текст)",
         "context_mode_fast": "Скорость (сжатый текст)",
-        "summarized_chunks_label": "Сжатых чанков в базе"
+        "summarized_chunks_label": "Сжатых чанков в базе",
+        "indicator_rag_speed": "Скорость",
+        "indicator_rag_quality": "Качество"
     },
     "en": {
         "lang_code": "en",
@@ -353,7 +355,9 @@
         "settings_context_mode": "RAG Context Mode",
         "context_mode_quality": "Quality (full text)",
         "context_mode_fast": "Speed (compressed summary)",
-        "summarized_chunks_label": "Summarized chunks in DB"
+        "summarized_chunks_label": "Summarized chunks in DB",
+        "indicator_rag_speed": "Speed",
+        "indicator_rag_quality": "Quality"
     },
     "de": {
         "lang_code": "de",
@@ -524,7 +528,16 @@
         "kb_rename_btn": "Umbenennen",
         "forums": "Foren",
         "kb_form_title_placeholder": "z.B. Trommeleinheit Cyan ersetzen",
-        "kb_date_placeholder": "JJJJ-MM-TT"
+        "kb_date_placeholder": "JJJJ-MM-TT",
+        "settings_llm_provider": "LLM-Anbieter",
+        "settings_ollama_api_base": "Ollama-API-Basis",
+        "settings_llm_model": "LLM-Modellname (oder leer für automatisch)",
+        "settings_context_mode": "RAG-Kontextmodus",
+        "context_mode_quality": "Qualität (Volltext)",
+        "context_mode_fast": "Geschwindigkeit (komprimierte Zusammenfassung)",
+        "summarized_chunks_label": "Zusammengefasste Abschnitte in DB",
+        "indicator_rag_speed": "Geschwindigkeit",
+        "indicator_rag_quality": "Qualität"
     },
     "fr": {
         "lang_code": "fr",
@@ -695,7 +708,16 @@
         "kb_rename_btn": "Renommer",
         "forums": "Forums",
         "kb_form_title_placeholder": "ex. Remplacement du tambour Cyan",
-        "kb_date_placeholder": "AAAA-MM-JJ"
+        "kb_date_placeholder": "AAAA-MM-JJ",
+        "settings_llm_provider": "Fournisseur LLM",
+        "settings_ollama_api_base": "Base de l'API Ollama",
+        "settings_llm_model": "Nom du modèle LLM (ou vide pour auto)",
+        "settings_context_mode": "Mode de contexte RAG",
+        "context_mode_quality": "Qualité (texte intégral)",
+        "context_mode_fast": "Vitesse (résumé compressé)",
+        "summarized_chunks_label": "Tronçons résumés dans la base",
+        "indicator_rag_speed": "Vitesse",
+        "indicator_rag_quality": "Qualité"
     },
     "es": {
         "lang_code": "es",
@@ -866,7 +888,16 @@
         "kb_rename_btn": "Renombrar",
         "forums": "Foros",
         "kb_form_title_placeholder": "ej. Reemplazo de tambor cian",
-        "kb_date_placeholder": "AAAA-MM-DD"
+        "kb_date_placeholder": "AAAA-MM-DD",
+        "settings_llm_provider": "Proveedor LLM",
+        "settings_ollama_api_base": "Base de la API Ollama",
+        "settings_llm_model": "Nombre del modelo LLM (o vacío para automático)",
+        "settings_context_mode": "Modo de contexto RAG",
+        "context_mode_quality": "Calidad (texto completo)",
+        "context_mode_fast": "Velocidad (resumen comprimido)",
+        "summarized_chunks_label": "Fragmentos resumidos en la BD",
+        "indicator_rag_speed": "Velocidad",
+        "indicator_rag_quality": "Calidad"
     },
     "it": {
         "lang_code": "it",
@@ -1037,7 +1068,16 @@
         "kb_rename_btn": "Rinomina",
         "forums": "Forum",
         "kb_form_title_placeholder": "es. Sostituzione tamburo ciano",
-        "kb_date_placeholder": "AAAA-MM-GG"
+        "kb_date_placeholder": "AAAA-MM-GG",
+        "settings_llm_provider": "Provider LLM",
+        "settings_ollama_api_base": "Base dell'API Ollama",
+        "settings_llm_model": "Nome modello LLM (o vuoto per auto)",
+        "settings_context_mode": "Modalità contesto RAG",
+        "context_mode_quality": "Qualità (testo completo)",
+        "context_mode_fast": "Velocità (riepilogo compresso)",
+        "summarized_chunks_label": "Frammenti sintetizzati nel database",
+        "indicator_rag_speed": "Velocità",
+        "indicator_rag_quality": "Qualità"
     },
     "zh": {
         "lang_code": "zh",
@@ -1208,7 +1248,16 @@
         "kb_rename_btn": "重命名",
         "forums": "论坛",
         "kb_form_title_placeholder": "例如：更换青色感光鼓",
-        "kb_date_placeholder": "年-月-日"
+        "kb_date_placeholder": "年-月-日",
+        "settings_llm_provider": "LLM 提供商",
+        "settings_ollama_api_base": "Ollama API 基础",
+        "settings_llm_model": "LLM 模型名称 (留空表示自动)",
+        "settings_context_mode": "RAG 上下文模式",
+        "context_mode_quality": "质量 (全文)",
+        "context_mode_fast": "速度 (压缩摘要)",
+        "summarized_chunks_label": "数据库中已摘要的块",
+        "indicator_rag_speed": "速度",
+        "indicator_rag_quality": "质量"
     },
     "ja": {
         "lang_code": "ja",
@@ -1379,7 +1428,16 @@
         "kb_rename_btn": "名前変更",
         "forums": "フォーラム",
         "kb_form_title_placeholder": "例：シアン感光ドラムの交換",
-        "kb_date_placeholder": "年-月-日"
+        "kb_date_placeholder": "年-月-日",
+        "settings_llm_provider": "LLMプロバイダー",
+        "settings_ollama_api_base": "Ollama APIベース",
+        "settings_llm_model": "LLMモデル名 (自動の場合は空白)",
+        "settings_context_mode": "RAGコンテキストモード",
+        "context_mode_quality": "品質 (全文)",
+        "context_mode_fast": "速度 (圧縮サマリー)",
+        "summarized_chunks_label": "DB内の要約済みセグメント",
+        "indicator_rag_speed": "速度",
+        "indicator_rag_quality": "品質"
     },
     "pt": {
         "lang_code": "pt",
@@ -1533,7 +1591,33 @@
         "kb_rename_btn": "Renomear",
         "forums": "Fóruns",
         "kb_form_title_placeholder": "ex. Substituição do cilindro ciano",
-        "kb_date_placeholder": "AAAA-MM-DD"
+        "kb_date_placeholder": "AAAA-MM-DD",
+        "settings_llm_provider": "Provedor LLM",
+        "settings_ollama_api_base": "Ollama API Base",
+        "settings_llm_model": "Nome do Modelo LLM (ou vazio para auto)",
+        "settings_context_mode": "Modo de Contexto RAG",
+        "context_mode_quality": "Qualidade (texto completo)",
+        "context_mode_fast": "Velocidade (resumo compactado)",
+        "summarized_chunks_label": "Trechos resumidos no BD",
+        "source_label": "Modo de busca:",
+        "source_mode_auto": "Auto (ambas as fontes)",
+        "source_mode_official": "Apenas oficial",
+        "source_mode_forum": "Apenas fórum",
+        "page_prefix": "Pág.",
+        "pdfs_btn": "Documentos",
+        "pdfs_modal_title": "Manuais Indexados",
+        "pdfs_modal_desc": "Os seguintes manuais de serviço e guias oficiais estão indexados no banco de dados vetorial e são usados para responder às suas consultas:",
+        "pdfs_modal_empty": "Nenhum manual PDF oficial encontrado.",
+        "direct_forum_links": "Abrir links do fórum diretamente (ignorar visualização do trecho)",
+        "about_author_btn": "Sobre",
+        "about_author_btn_title": "Informações do desenvolvedor e suporte ao projeto",
+        "about_author_title": "Sobre o Autor e o Projeto",
+        "about_support_title": "Apoie o Projeto",
+        "about_support_text": "Se você achar este projeto útil, você pode apoiar o seu desenvolvimento:",
+        "about_other_projects": "🛠️ Outros Projetos",
+        "about_plugin_desc": "Um poderoso plugin para Photoshop desenvolvido com ComfyUI, que oferece integração direta com modelos gerativos locais sem nuvens, assinaturas ou taxas recorrentes.",
+        "indicator_rag_speed": "Velocidade",
+        "indicator_rag_quality": "Qualidade"
     },
     "tr": {
         "lang_code": "tr",
@@ -1704,6 +1788,15 @@
         "kb_rename_btn": "Yeniden Adlandır",
         "forums": "Forumlar",
         "kb_form_title_placeholder": "Örn: Cam göbeği drum değişimi",
-        "kb_date_placeholder": "YYYY-AA-GG"
+        "kb_date_placeholder": "YYYY-AA-GG",
+        "settings_llm_provider": "LLM Sağlayıcı",
+        "settings_ollama_api_base": "Ollama API Temeli",
+        "settings_llm_model": "LLM Model Adı (otomatik için boş)",
+        "settings_context_mode": "RAG Bağlam Modu",
+        "context_mode_quality": "Kalite (tam metin)",
+        "context_mode_fast": "Hız (sıkıştırılmış özet)",
+        "summarized_chunks_label": "Veritabanındaki özetlenmiş parçalar",
+        "indicator_rag_speed": "Hız",
+        "indicator_rag_quality": "Kalite"
     }
 }

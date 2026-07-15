@@ -17,6 +17,8 @@ from config.manager import ConfigManager
 from llm.client import LLMClient
 
 def process_chunk(row, api_url, model_name, provider):
+    import time
+    start_time = time.time()
     chunk_id, text, thread_title = row
     
     # Строим промпт для сжатия с жестким запретом на рассуждения (CoT)
@@ -56,12 +58,14 @@ def process_chunk(row, api_url, model_name, provider):
         data = json.loads(response.content.decode('utf-8'))
         summary = data["choices"][0]["message"]["content"].strip()
         
+        duration = time.time() - start_time
         if not summary or len(summary) < 15:
-            return chunk_id, None, thread_title, "LLM returned empty summary (exhausted by reasoning/CoT)"
+            return chunk_id, None, thread_title, "LLM returned empty summary (exhausted by reasoning/CoT)", duration
             
-        return chunk_id, summary, thread_title, None
+        return chunk_id, summary, thread_title, None, duration
     except Exception as e:
-        return chunk_id, None, thread_title, str(e)
+        duration = time.time() - start_time
+        return chunk_id, None, thread_title, str(e), duration
 
 def main():
     parser = argparse.ArgumentParser(description="Инкрементальная техническая суммаризация чанков RAG.")
@@ -131,6 +135,8 @@ def main():
 
     print("\n[!] Нажмите Ctrl+C в любой момент, чтобы приостановить процесс без потери данных.\n")
     
+    import time
+    start_run_time = time.time()
     processed_count = 0
     success_count = 0
     failed_count = 0
@@ -145,22 +151,41 @@ def main():
             }
             
             for future in as_completed(future_to_row):
-                chunk_id, summary, thread_title, error = future.result()
+                chunk_id, summary, thread_title, error, duration = future.result()
                 processed_count += 1
                 
                 current_done = already_summarized + processed_count
                 percent = (current_done / total_count) * 100
                 
+                # Расчет оставшегося времени (ETA)
+                elapsed_time = time.time() - start_run_time
+                remaining_chunks = to_summarize_count - processed_count
+                if processed_count > 0:
+                    rate = processed_count / elapsed_time  # чанков в секунду
+                    eta_seconds = remaining_chunks / rate
+                    if eta_seconds < 60:
+                        eta_str = f"{eta_seconds:.0f}с"
+                    elif eta_seconds < 3600:
+                        eta_str = f"{int(eta_seconds // 60)}м {int(eta_seconds % 60)}с"
+                    else:
+                        hours = int(eta_seconds // 3600)
+                        minutes = int((eta_seconds % 3600) // 60)
+                        eta_str = f"{hours}ч {minutes}м"
+                else:
+                    eta_str = "--"
+                
+                eta_prefix = f"[Осталось: {eta_str}] "
+                
                 if error:
                     failed_count += 1
-                    print(f"[{current_done}/{total_count}] [{percent:.1f}%] [!] Ошибка сжатия {chunk_id[:12]} ({thread_title[:25]}): {error}")
+                    print(f"[{current_done}/{total_count}] [{percent:.1f}%] {eta_prefix}[!] Ошибка ({duration:.1f}с) {chunk_id[:12]} ({thread_title[:25]}): {error}")
                 else:
                     # Запись в БД происходит последовательно в главном потоке для предотвращения блокировок SQLite
                     try:
                         cursor.execute("UPDATE chunks SET summary = ? WHERE chunk_id = ?", (summary, chunk_id))
                         conn.commit()
                         success_count += 1
-                        print(f"[{current_done}/{total_count}] [{percent:.1f}%] [+] Успешно сжат {chunk_id[:12]} ({thread_title[:25]})")
+                        print(f"[{current_done}/{total_count}] [{percent:.1f}%] {eta_prefix}[+] Успешно ({duration:.1f}с) {chunk_id[:12]} ({thread_title[:25]})")
                     except Exception as db_err:
                         print(f"[!] Ошибка записи в БД для {chunk_id[:12]}: {db_err}")
                         
