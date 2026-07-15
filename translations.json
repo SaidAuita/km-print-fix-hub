@@ -177,7 +177,10 @@
         "context_mode_fast": "Скорость (сжатый текст)",
         "summarized_chunks_label": "Сжатых чанков в базе",
         "indicator_rag_speed": "Скорость",
-        "indicator_rag_quality": "Качество"
+        "indicator_rag_quality": "Качество",
+        "llm_analysis_disabled": "Анализ LLM отключен. Ниже представлены найденные первоисточники:",
+        "context_mode_off": "Отключен (только поиск)",
+        "indicator_rag_off": "OFF"
     },
     "en": {
         "lang_code": "en",
@@ -357,7 +360,10 @@
         "context_mode_fast": "Speed (compressed summary)",
         "summarized_chunks_label": "Summarized chunks in DB",
         "indicator_rag_speed": "Speed",
-        "indicator_rag_quality": "Quality"
+        "indicator_rag_quality": "Quality",
+        "llm_analysis_disabled": "LLM analysis is disabled. Here are the retrieved source materials:",
+        "context_mode_off": "Disabled (search only)",
+        "indicator_rag_off": "OFF"
     },
     "de": {
         "lang_code": "de",
@@ -537,7 +543,10 @@
         "context_mode_fast": "Geschwindigkeit (komprimierte Zusammenfassung)",
         "summarized_chunks_label": "Zusammengefasste Abschnitte in DB",
         "indicator_rag_speed": "Geschwindigkeit",
-        "indicator_rag_quality": "Qualität"
+        "indicator_rag_quality": "Qualität",
+        "llm_analysis_disabled": "LLM-Analyse ist deaktiviert. Hier sind die gefundenen Quellmaterialien:",
+        "context_mode_off": "Deaktiviert (nur Suche)",
+        "indicator_rag_off": "OFF"
     },
     "fr": {
         "lang_code": "fr",
@@ -717,7 +726,10 @@
         "context_mode_fast": "Vitesse (résumé compressé)",
         "summarized_chunks_label": "Tronçons résumés dans la base",
         "indicator_rag_speed": "Vitesse",
-        "indicator_rag_quality": "Qualité"
+        "indicator_rag_quality": "Qualité",
+        "llm_analysis_disabled": "L'analyse LLM est désactivée. Voici les documents sources trouvés :",
+        "context_mode_off": "Désactivé (recherche uniquement)",
+        "indicator_rag_off": "OFF"
     },
     "es": {
         "lang_code": "es",
@@ -897,7 +909,10 @@
         "context_mode_fast": "Velocidad (resumen comprimido)",
         "summarized_chunks_label": "Fragmentos resumidos en la BD",
         "indicator_rag_speed": "Velocidad",
-        "indicator_rag_quality": "Calidad"
+        "indicator_rag_quality": "Calidad",
+        "llm_analysis_disabled": "El análisis de LLM está desactivado. Aquí están los materiales de origen encontrados:",
+        "context_mode_off": "Desactivado (solo búsqueda)",
+        "indicator_rag_off": "OFF"
     },
     "it": {
         "lang_code": "it",
@@ -1077,7 +1092,10 @@
         "context_mode_fast": "Velocità (riepilogo compresso)",
         "summarized_chunks_label": "Frammenti sintetizzati nel database",
         "indicator_rag_speed": "Velocità",
-        "indicator_rag_quality": "Qualità"
+        "indicator_rag_quality": "Qualità",
+        "llm_analysis_disabled": "L'analisi LLM è disabilitata. Ecco i materiali sorgente trovati:",
+        "context_mode_off": "Disabilitato (solo ricerca)",
+        "indicator_rag_off": "OFF"
     },
     "zh": {
         "lang_code": "zh",
@@ -1257,7 +1275,10 @@
         "context_mode_fast": "速度 (压缩摘要)",
         "summarized_chunks_label": "数据库中已摘要的块",
         "indicator_rag_speed": "速度",
-        "indicator_rag_quality": "质量"
+        "indicator_rag_quality": "质量",
+        "llm_analysis_disabled": "LLM 分析已禁用。以下是检索到的源材料：",
+        "context_mode_off": "已禁用 (仅搜索)",
+        "indicator_rag_off": "OFF"
     },
     "ja": {
         "lang_code": "ja",
@@ -1437,7 +1458,10 @@
         "context_mode_fast": "速度 (圧縮サマリー)",
         "summarized_chunks_label": "DB内の要約済みセグメント",
         "indicator_rag_speed": "速度",
-        "indicator_rag_quality": "品質"
+        "indicator_rag_quality": "品質",
+        "llm_analysis_disabled": "LLM分析は無効です。見つかったソース資料は次のとおりです。",
+        "context_mode_off": "無効 (検索のみ)",
+        "indicator_rag_off": "OFF"
     },
     "pt": {
         "lang_code": "pt",
@@ -1617,7 +1641,10 @@
         "about_other_projects": "🛠️ Outros Projetos",
         "about_plugin_desc": "Um poderoso plugin para Photoshop desenvolvido com ComfyUI, que oferece integração direta com modelos gerativos locais sem nuvens, assinaturas ou taxas recorrentes.",
         "indicator_rag_speed": "Velocidade",
-        "indicator_rag_quality": "Qualidade"
+        "indicator_rag_quality": "Qualidade",
+        "llm_analysis_disabled": "A análise LLM está desativada. Aqui estão os materiais de origem encontrados:",
+        "context_mode_off": "Desativado (apenas busca)",
+        "indicator_rag_off": "OFF"
     },
     "tr": {
         "lang_code": "tr",
@@ -1797,6 +1824,9 @@
         "context_mode_fast": "Hız (sıkıştırılmış özet)",
         "summarized_chunks_label": "Veritabanındaki özetlenmiş parçalar",
         "indicator_rag_speed": "Hız",
-        "indicator_rag_quality": "Kalite"
+        "indicator_rag_quality": "Kalite",
+        "llm_analysis_disabled": "LLM analizi devre dışı bırakıldı. Bulunan kaynak materyaller aşağıdadır:",
+        "context_mode_off": "Devre dışı (yalnızca arama)",
+        "indicator_rag_off": "OFF"
     }
 }

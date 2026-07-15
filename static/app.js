@@ -823,7 +823,14 @@ async function changeLanguage(lang) {
 }
 
 async function toggleContextMode(currentMode) {
-    const newMode = (currentMode === "fast") ? "quality" : "fast";
+    let newMode;
+    if (currentMode === "quality") {
+        newMode = "fast";
+    } else if (currentMode === "fast") {
+        newMode = "off";
+    } else {
+        newMode = "quality";
+    }
     await saveLastSelection({ 
         LLM_CONTEXT_MODE: newMode,
         LAST_CONTEXT_MODE: newMode 

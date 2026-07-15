@@ -224,11 +224,19 @@ async def ask_question(request: Request):
         # 1. Сначала отправляем отладочную информацию по поиску (Debug)
         yield f"event: debug\ndata: {json.dumps(debug_info, ensure_ascii=False)}\n\n"
         
-        # 2. Стримим ответ от LLM
+        # 2. Стримим ответ от LLM или пишем, что анализ отключен
+        context_mode = config_mgr.get("LLM_CONTEXT_MODE", "quality")
         full_answer = ""
-        for chunk in llm_client.generate_answer_stream(system_prompt, user_prompt):
-            full_answer += chunk
-            yield f"data: {json.dumps({'text': chunk}, ensure_ascii=False)}\n\n"
+        if context_mode == "off":
+            lang = config_mgr.get("LAST_LANG", "ru")
+            t = translations.get(lang, translations.get("ru", {}))
+            msg = t.get("llm_analysis_disabled", "LLM analysis is disabled. Showing search results:")
+            full_answer = msg
+            yield f"data: {json.dumps({'text': msg}, ensure_ascii=False)}\n\n"
+        else:
+            for chunk in llm_client.generate_answer_stream(system_prompt, user_prompt):
+                full_answer += chunk
+                yield f"data: {json.dumps({'text': chunk}, ensure_ascii=False)}\n\n"
             
         # 3. Сохраняем диалог в историю
         if full_answer and not full_answer.startswith("\n[!] Ошибка"):

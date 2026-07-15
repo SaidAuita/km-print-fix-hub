@@ -180,6 +180,11 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
                             {{ t.indicator_rag_speed }}
                         </span>
+                        {% elif settings.LLM_CONTEXT_MODE == 'off' %}
+                        <span class="text-gray-400 font-bold flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+                            {{ t.indicator_rag_off | default('OFF') }}
+                        </span>
                         {% else %}
                         <span class="text-emerald-400 font-bold flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -494,6 +499,7 @@
                         <select name="LLM_CONTEXT_MODE" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2.5 focus:outline-none text-gray-200 text-sm">
                             <option value="quality" {% if settings.LLM_CONTEXT_MODE == 'quality' or settings.LLM_CONTEXT_MODE is not defined %}selected{% endif %}>{{ t.context_mode_quality }}</option>
                             <option value="fast" {% if settings.LLM_CONTEXT_MODE == 'fast' %}selected{% endif %}>{{ t.context_mode_fast }}</option>
+                            <option value="off" {% if settings.LLM_CONTEXT_MODE == 'off' %}selected{% endif %}>{{ t.context_mode_off }}</option>
                         </select>
                     </div>
                 </div>

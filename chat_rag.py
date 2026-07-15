@@ -230,7 +230,12 @@ def main():
             system_prompt, user_prompt, sources = build_prompt(query, search_results)
             
             # Запрос к LLM в LM Studio
-            success = ask_llm(system_prompt, user_prompt, model_name)
+            context_mode = config_mgr.get("LLM_CONTEXT_MODE", "quality")
+            if context_mode == "off":
+                print("\n[!] Анализ LLM отключен (OFF).")
+                success = True
+            else:
+                success = ask_llm(system_prompt, user_prompt, model_name)
             
             if success:
                 # Вывод источников с активными ссылками
