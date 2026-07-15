@@ -171,26 +171,35 @@
                 <div class="flex items-center gap-4">
 
                     <!-- RAG Context Mode Indicator -->
-                    <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#142036] border border-[#1e293b] text-xs font-semibold select-none cursor-pointer hover:bg-[#1c2e4d] transition-all" 
+                    <div class="flex flex-col justify-center items-start px-3 py-1 rounded-lg bg-[#142036] border border-[#1e293b] select-none cursor-pointer hover:bg-[#1c2e4d] transition-all" 
                          onclick="toggleContextMode('{{ settings.LLM_CONTEXT_MODE | default('quality') }}')" 
                          title="{{ t.settings_context_mode }} ({% if settings.LAST_LANG == 'ru' %}Нажмите для переключения{% else %}Click to toggle{% endif %})">
-                        <span class="text-gray-400">RAG:</span>
-                        {% if settings.LLM_CONTEXT_MODE == 'fast' %}
-                        <span class="text-yellow-400 font-bold flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
-                            {{ t.indicator_rag_speed }}
-                        </span>
-                        {% elif settings.LLM_CONTEXT_MODE == 'off' %}
-                        <span class="text-gray-400 font-bold flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
-                            {{ t.indicator_rag_off | default('OFF') }}
-                        </span>
-                        {% else %}
-                        <span class="text-emerald-400 font-bold flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                            {{ t.indicator_rag_quality }}
-                        </span>
-                        {% endif %}
+                        <div class="flex items-center gap-1 text-[10px] text-gray-400 font-semibold leading-none mb-0.5">
+                            <span>RAG:</span>
+                            {% if settings.LLM_CONTEXT_MODE == 'fast' %}
+                            <span class="text-yellow-400 font-bold flex items-center gap-1">
+                                <span class="w-1 h-1 rounded-full bg-yellow-400 animate-pulse"></span>
+                                {{ t.indicator_rag_speed }}
+                            </span>
+                            {% elif settings.LLM_CONTEXT_MODE == 'off' %}
+                            <span class="text-gray-400 font-bold flex items-center gap-1">
+                                <span class="w-1 h-1 rounded-full bg-gray-500"></span>
+                                {{ t.indicator_rag_off | default('OFF') }}
+                            </span>
+                            {% else %}
+                            <span class="text-emerald-400 font-bold flex items-center gap-1">
+                                <span class="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></span>
+                                {{ t.indicator_rag_quality }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div class="text-[9.5px] text-white font-bold leading-none tracking-wide">
+                            {% if settings.LLM_CONTEXT_MODE == 'quality' %}
+                                {{ settings.LLM_CONTEXT_QUALITY_WORDS | default(4000) }}
+                            {% else %}
+                                {{ settings.LLM_CONTEXT_SPEED_WORDS | default(1000) }}
+                            {% endif %}
+                        </div>
                     </div>
 
                     <!-- Language Selector Dropdown -->
