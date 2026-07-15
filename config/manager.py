@@ -247,6 +247,7 @@ class ConfigManager:
             "LAST_ENABLE_CONTEXT_OPTIMIZER": False,
             "LAST_DIRECT_FORUM_LINKS": False,
             "LAST_CONTEXT_MODE": "quality",
+            "LAST_AUTO_CONTEXT_SIZE": True,
             "LAST_LANG": getattr(config, 'LAST_LANG', 'ru'),
         }
         self.settings = {}

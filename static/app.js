@@ -528,6 +528,9 @@ function toggleSettingsModal(show) {
         if (typeof updateProviderInputs === "function") {
             updateProviderInputs();
         }
+        if (typeof updateContextSizeAutoLogic === "function") {
+            updateContextSizeAutoLogic();
+        }
         if (typeof refreshModelList === "function") {
             refreshModelList();
         }
@@ -623,6 +626,7 @@ async function saveSettings(e) {
     settings["LAST_STRICT_MODE"] = document.getElementById("strictModeCheckModal").checked;
     settings["LAST_ENABLE_CONTEXT_OPTIMIZER"] = document.getElementById("contextOptimizerCheckModal").checked;
     settings["LAST_DIRECT_FORUM_LINKS"] = document.getElementById("directForumLinksCheckModal").checked;
+    settings["LAST_AUTO_CONTEXT_SIZE"] = document.getElementById("autoContextSizeCheck").checked;
     
     const contextModeSelect = form.querySelector("[name='LLM_CONTEXT_MODE']");
     if (contextModeSelect) {
@@ -822,7 +826,7 @@ async function changeLanguage(lang) {
     window.location.reload();
 }
 
-async function toggleContextMode(currentMode) {
+async function toggleContextMode(currentMode, isAuto) {
     let newMode;
     if (currentMode === "quality") {
         newMode = "fast";
@@ -831,10 +835,19 @@ async function toggleContextMode(currentMode) {
     } else {
         newMode = "quality";
     }
-    await saveLastSelection({ 
+    
+    const settingsUpdate = { 
         LLM_CONTEXT_MODE: newMode,
         LAST_CONTEXT_MODE: newMode 
-    });
+    };
+    
+    if (isAuto) {
+        // Automatically set size: Quality gets 3000, Speed/OFF gets 1000
+        const autoVal = (newMode === "quality") ? 3000 : 1000;
+        settingsUpdate["MAX_CONTEXT_SIZE_WORDS"] = autoVal;
+    }
+    
+    await saveLastSelection(settingsUpdate);
     window.location.reload();
 }
 

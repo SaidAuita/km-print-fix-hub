@@ -180,7 +180,9 @@
         "indicator_rag_quality": "Качество",
         "llm_analysis_disabled": "Анализ LLM отключен. Ниже представлены найденные первоисточники:",
         "context_mode_off": "Отключен (только поиск)",
-        "indicator_rag_off": "OFF"
+        "indicator_rag_off": "OFF",
+        "settings_auto_context_size": "Автоматический размер контекста",
+        "warning_low_context_quality": "Внимание: Для режима 'Качество' размер контекста менее 3000 слов может сильно ограничить количество используемых источников."
     },
     "en": {
         "lang_code": "en",
@@ -363,7 +365,9 @@
         "indicator_rag_quality": "Quality",
         "llm_analysis_disabled": "LLM analysis is disabled. Here are the retrieved source materials:",
         "context_mode_off": "Disabled (search only)",
-        "indicator_rag_off": "OFF"
+        "indicator_rag_off": "OFF",
+        "settings_auto_context_size": "Auto Context Size",
+        "warning_low_context_quality": "Warning: For 'Quality' mode, context size less than 3000 words may significantly limit the number of used sources."
     },
     "de": {
         "lang_code": "de",
@@ -546,7 +550,9 @@
         "indicator_rag_quality": "Qualität",
         "llm_analysis_disabled": "LLM-Analyse ist deaktiviert. Hier sind die gefundenen Quellmaterialien:",
         "context_mode_off": "Deaktiviert (nur Suche)",
-        "indicator_rag_off": "OFF"
+        "indicator_rag_off": "OFF",
+        "settings_auto_context_size": "Automatische Kontextgröße",
+        "warning_low_context_quality": "Achtung: Für den Modus 'Qualität' kann eine Kontextgröße von weniger als 3000 Wörtern die Anzahl der verwendeten Quellen stark einschränken."
     },
     "fr": {
         "lang_code": "fr",
@@ -729,7 +735,9 @@
         "indicator_rag_quality": "Qualité",
         "llm_analysis_disabled": "L'analyse LLM est désactivée. Voici les documents sources trouvés :",
         "context_mode_off": "Désactivé (recherche uniquement)",
-        "indicator_rag_off": "OFF"
+        "indicator_rag_off": "OFF",
+        "settings_auto_context_size": "Taille de contexte automatique",
+        "warning_low_context_quality": "Attention : Pour le mode 'Qualité', une taille de contexte inférieure à 3000 mots peut fortement limiter le nombre de sources utilisées."
     },
     "es": {
         "lang_code": "es",
@@ -912,7 +920,9 @@
         "indicator_rag_quality": "Calidad",
         "llm_analysis_disabled": "El análisis de LLM está desactivado. Aquí están los materiales de origen encontrados:",
         "context_mode_off": "Desactivado (solo búsqueda)",
-        "indicator_rag_off": "OFF"
+        "indicator_rag_off": "OFF",
+        "settings_auto_context_size": "Tamaño de contexto automático",
+        "warning_low_context_quality": "Atención: Para el modo 'Calidad', un tamaño de contexto inferior a 3000 palabras puede limitar considerablemente el número de fuentes utilizadas."
     },
     "it": {
         "lang_code": "it",
@@ -1095,7 +1105,9 @@
         "indicator_rag_quality": "Qualità",
         "llm_analysis_disabled": "L'analisi LLM è disabilitata. Ecco i materiali sorgente trovati:",
         "context_mode_off": "Disabilitato (solo ricerca)",
-        "indicator_rag_off": "OFF"
+        "indicator_rag_off": "OFF",
+        "settings_auto_context_size": "Dimensione del contesto automatica",
+        "warning_low_context_quality": "Attenzione: Per la modalità 'Qualità', una dimensione del contesto inferiore a 3000 parole può limitare notevolmente il numero di fonti utilizzate."
     },
     "zh": {
         "lang_code": "zh",
@@ -1278,7 +1290,9 @@
         "indicator_rag_quality": "质量",
         "llm_analysis_disabled": "LLM 分析已禁用。以下是检索到的源材料：",
         "context_mode_off": "已禁用 (仅搜索)",
-        "indicator_rag_off": "OFF"
+        "indicator_rag_off": "OFF",
+        "settings_auto_context_size": "自动上下文大小",
+        "warning_low_context_quality": "警告：在“质量”模式下，上下文大小小于 3000 字可能会严重限制所使用的源数量。"
     },
     "ja": {
         "lang_code": "ja",
@@ -1461,7 +1475,9 @@
         "indicator_rag_quality": "品質",
         "llm_analysis_disabled": "LLM分析は無効です。見つかったソース資料は次のとおりです。",
         "context_mode_off": "無効 (検索のみ)",
-        "indicator_rag_off": "OFF"
+        "indicator_rag_off": "OFF",
+        "settings_auto_context_size": "自動コンテキストサイズ",
+        "warning_low_context_quality": "注意：「品質」モードでは、コンテキストサイズが3000語未満の場合、使用される情報源の数が大幅に制限される可能性があります。"
     },
     "pt": {
         "lang_code": "pt",
@@ -1644,7 +1660,9 @@
         "indicator_rag_quality": "Qualidade",
         "llm_analysis_disabled": "A análise LLM está desativada. Aqui estão os materiais de origem encontrados:",
         "context_mode_off": "Desativado (apenas busca)",
-        "indicator_rag_off": "OFF"
+        "indicator_rag_off": "OFF",
+        "settings_auto_context_size": "Tamanho de contexto automático",
+        "warning_low_context_quality": "Atenção: Para o modo 'Qualidade', um tamanho de contexto inferior a 3000 palavras pode limitar severamente o número de fontes utilizadas."
     },
     "tr": {
         "lang_code": "tr",
@@ -1827,6 +1845,8 @@
         "indicator_rag_quality": "Kalite",
         "llm_analysis_disabled": "LLM analizi devre dışı bırakıldı. Bulunan kaynak materyaller aşağıdadır:",
         "context_mode_off": "Devre dışı (yalnızca arama)",
-        "indicator_rag_off": "OFF"
+        "indicator_rag_off": "OFF",
+        "settings_auto_context_size": "Otomatik bağlam boyutu",
+        "warning_low_context_quality": "Uyarı: 'Kalite' modu için 3000 kelimeden az bağlam boyutu, kullanılan kaynakların sayısını ciddi şekilde sınırlayabilir."
     }
 }
