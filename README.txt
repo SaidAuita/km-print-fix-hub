@@ -1,4 +1,4 @@
-KM Print Fix Hub v 1.20 (2026-07-16) 
+KM Print Fix Hub v1.20 Light 
 ===================================== 
  
 [RU] РУССКАЯ ИНСТРУКЦИЯ / RUSSIAN GUIDE 
