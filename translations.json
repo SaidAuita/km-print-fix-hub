@@ -184,7 +184,8 @@
         "settings_quality_words": "Макс. слов для «Качества»",
         "settings_speed_words": "Макс. слов для «Скорости / OFF»",
         "translate_thread_titles": "Переводить названия тем",
-        "response_time": "Время ответа"
+        "response_time": "Время ответа",
+        "forum_lang_label": "Форумы"
     },
     "en": {
         "lang_code": "en",
@@ -371,7 +372,8 @@
         "settings_quality_words": "Max words for Quality",
         "settings_speed_words": "Max words for Speed / OFF",
         "translate_thread_titles": "Translate thread titles",
-        "response_time": "Response time"
+        "response_time": "Response time",
+        "forum_lang_label": "Forums"
     },
     "de": {
         "lang_code": "de",
@@ -558,7 +560,8 @@
         "settings_quality_words": "Max. Wörter für Qualität",
         "settings_speed_words": "Max. Wörter für Geschwindigkeit / OFF",
         "translate_thread_titles": "Thementitel übersetzen",
-        "response_time": "Antwortzeit"
+        "response_time": "Antwortzeit",
+        "forum_lang_label": "Foren"
     },
     "fr": {
         "lang_code": "fr",
@@ -745,7 +748,8 @@
         "settings_quality_words": "Mots max pour Qualité",
         "settings_speed_words": "Mots max pour Vitesse / OFF",
         "translate_thread_titles": "Traduire les titres des fils",
-        "response_time": "Temps de réponse"
+        "response_time": "Temps de réponse",
+        "forum_lang_label": "Forums"
     },
     "es": {
         "lang_code": "es",
@@ -932,7 +936,8 @@
         "settings_quality_words": "Máx. palabras para Calidad",
         "settings_speed_words": "Máx. palabras para Velocidad / OFF",
         "translate_thread_titles": "Traducir títulos de hilos",
-        "response_time": "Tiempo de respuesta"
+        "response_time": "Tiempo de respuesta",
+        "forum_lang_label": "Foros"
     },
     "it": {
         "lang_code": "it",
@@ -1119,7 +1124,8 @@
         "settings_quality_words": "Parole max per Qualità",
         "settings_speed_words": "Parole max per Velocità / OFF",
         "translate_thread_titles": "Traduci i titoli delle discussioni",
-        "response_time": "Tempo di risposta"
+        "response_time": "Tempo di risposta",
+        "forum_lang_label": "Forum"
     },
     "zh": {
         "lang_code": "zh",
@@ -1306,7 +1312,8 @@
         "settings_quality_words": "“质量”模式最大字数",
         "settings_speed_words": "“速度/关闭”模式最大字数",
         "translate_thread_titles": "翻译主题标题",
-        "response_time": "响应时间"
+        "response_time": "响应时间",
+        "forum_lang_label": "论坛"
     },
     "ja": {
         "lang_code": "ja",
@@ -1493,7 +1500,8 @@
         "settings_quality_words": "「品質」の最大語数",
         "settings_speed_words": "「速度/オフ」の最大語数",
         "translate_thread_titles": "スレッドタイトルの翻訳",
-        "response_time": "応答時間"
+        "response_time": "応答時間",
+        "forum_lang_label": "フォーラム"
     },
     "pt": {
         "lang_code": "pt",
@@ -1865,6 +1873,7 @@
         "settings_quality_words": "Kalite için maksimum kelime",
         "settings_speed_words": "Hız / OFF için maksimum kelime",
         "translate_thread_titles": "Konu başlıklarını çevir",
-        "response_time": "Yanıt süresi"
+        "response_time": "Yanıt süresi",
+        "forum_lang_label": "Forumlar"
     }
 }

@@ -185,6 +185,7 @@ async def ask_question(request: Request):
     strict_mode = data.get("strict_mode", False)
     show_reasoning = data.get("show_reasoning", False)
     source_filter = data.get("source_filter", "auto")
+    forum_lang = data.get("forum_lang", "all")
     enable_context_optimizer = data.get("enable_context_optimizer", False)
     
     if not query:
@@ -195,7 +196,9 @@ async def ask_question(request: Request):
     config_mgr.set("ENABLE_CONTEXT_OPTIMIZER", enable_context_optimizer)
 
     # Выполняем 3-ступенчатый поиск
-    retrieved_docs, debug_info = search_coordinator.search(query, model=model, search_mode=search_mode, source_filter=source_filter)
+    retrieved_docs, debug_info = search_coordinator.search(
+        query, model=model, search_mode=search_mode, source_filter=source_filter, forum_lang=forum_lang
+    )
     
     # Формируем промпт для LLM
     system_prompt, user_prompt, used_docs = llm_client.build_prompt(

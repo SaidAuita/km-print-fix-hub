@@ -384,6 +384,14 @@
                             <option value="forum" {% if settings.LAST_SOURCE_FILTER == 'forum' %}selected{% endif %}>{{ t.source_mode_forum }}</option>
                         </select>
                     </div>
+                    <div class="flex items-center gap-2">
+                        <label for="forumLangSelect" class="font-semibold">{{ t.forum_lang_label }}</label>
+                        <select id="forumLangSelect" class="bg-[#142036] border border-[#1e293b] rounded-lg px-2 py-1.5 focus:outline-none focus:border-brand-500 text-gray-200 cursor-pointer">
+                            <option value="all" {% if settings.LAST_FORUM_LANG == 'all' or not settings.LAST_FORUM_LANG %}selected{% endif %}>ALL</option>
+                            <option value="ru" {% if settings.LAST_FORUM_LANG == 'ru' %}selected{% endif %}>RU</option>
+                            <option value="en" {% if settings.LAST_FORUM_LANG == 'en' %}selected{% endif %}>EN</option>
+                        </select>
+                    </div>
                     <!-- PDFs List Button -->
                     <button type="button" onclick="openPDFsModal()" class="flex items-center gap-1.5 bg-[#142036] hover:bg-[#1c2e4d] border border-[#1e293b] rounded-lg px-2.5 py-1.5 text-xs text-gray-300 font-semibold cursor-pointer transition-colors" title="{{ t.pdfs_modal_title }}">
                         <svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>

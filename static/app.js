@@ -104,6 +104,7 @@ async function submitQuery() {
         const strictMode = document.getElementById("strictModeCheckModal").checked;
         const showReasoning = document.getElementById("showReasoningCheckModal").checked;
         const sourceFilter = document.getElementById("sourceFilterSelect").value;
+        const forumLang = document.getElementById("forumLangSelect") ? document.getElementById("forumLangSelect").value : "all";
         const enableContextOptimizer = document.getElementById("contextOptimizerCheckModal").checked;
 
         const response = await fetch("/ask", {
@@ -116,6 +117,7 @@ async function submitQuery() {
                 strict_mode: strictMode,
                 show_reasoning: showReasoning,
                 source_filter: sourceFilter,
+                forum_lang: forumLang,
                 enable_context_optimizer: enableContextOptimizer
             })
         });
@@ -812,6 +814,13 @@ const sourceFilterSelect = document.getElementById("sourceFilterSelect");
 if (sourceFilterSelect) {
     sourceFilterSelect.addEventListener("change", function() {
         saveLastSelection({ LAST_SOURCE_FILTER: this.value });
+    });
+}
+
+const forumLangSelect = document.getElementById("forumLangSelect");
+if (forumLangSelect) {
+    forumLangSelect.addEventListener("change", function() {
+        saveLastSelection({ LAST_FORUM_LANG: this.value });
     });
 }
 

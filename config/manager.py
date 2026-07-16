@@ -252,6 +252,7 @@ class ConfigManager:
             "LAST_LANG": getattr(config, 'LAST_LANG', 'ru'),
             "TRANSLATE_THREAD_TITLES": getattr(config, 'TRANSLATE_THREAD_TITLES', True),
             "LAST_TRANSLATE_THREAD_TITLES": True,
+            "LAST_FORUM_LANG": "all",
         }
         self.settings = {}
         self.load()
