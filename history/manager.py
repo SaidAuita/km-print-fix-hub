@@ -23,10 +23,16 @@ class HistoryManager:
             sources_json TEXT
         )
         """)
+        # Попробуем добавить колонку duration для существующей БД
+        try:
+            cursor.execute("ALTER TABLE chat_history ADD COLUMN duration REAL")
+        except sqlite3.OperationalError:
+            # Колонка уже существует
+            pass
         conn.commit()
         conn.close()
 
-    def add_chat(self, query, answer, sources):
+    def add_chat(self, query, answer, sources, duration=None):
         """
         Сохраняет новый диалог в историю.
         sources: список документов, переданный в формате [{'id': ..., 'title': ..., 'url': ...}]
@@ -37,8 +43,8 @@ class HistoryManager:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO chat_history (timestamp, query, answer, sources_json) VALUES (?, ?, ?, ?)",
-            (timestamp, query, answer, sources_json)
+            "INSERT INTO chat_history (timestamp, query, answer, sources_json, duration) VALUES (?, ?, ?, ?, ?)",
+            (timestamp, query, answer, sources_json, duration)
         )
         chat_id = cursor.lastrowid
         conn.commit()
@@ -53,7 +59,7 @@ class HistoryManager:
         # Позволяет обращаться к колонкам по именам, а не только по индексам
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        cursor.execute("SELECT id, timestamp, query, answer, sources_json FROM chat_history ORDER BY id DESC")
+        cursor.execute("SELECT id, timestamp, query, answer, sources_json, duration FROM chat_history ORDER BY id DESC")
         rows = cursor.fetchall()
         
         history = []
@@ -68,7 +74,8 @@ class HistoryManager:
                 "timestamp": row["timestamp"],
                 "query": row["query"],
                 "answer": row["answer"],
-                "sources": sources
+                "sources": sources,
+                "duration": row["duration"]
             })
             
         conn.close()

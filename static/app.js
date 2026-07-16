@@ -569,6 +569,22 @@ function loadHistoryItem(chat) {
     if (chat.sources && chat.sources.length > 0) {
         renderSources(chat.sources);
     }
+    
+    // Показываем время генерации из сохраненного в истории значения
+    const showTimeBlock = document.getElementById("generationTimeBlock");
+    const showTimeText = document.getElementById("generationTimeText");
+    if (showTimeBlock && showTimeText) {
+        if (chat.duration) {
+            const mins = Math.floor(chat.duration / 60);
+            const secs = Math.floor(chat.duration % 60);
+            const formattedTime = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            const prefix = window.TRANSLATIONS.response_time || "Response time";
+            showTimeText.textContent = `${prefix}: ${formattedTime}`;
+            showTimeBlock.classList.remove("hidden");
+        } else {
+            showTimeBlock.classList.add("hidden");
+        }
+    }
 }
 
 // Показать/скрыть модалку настроек

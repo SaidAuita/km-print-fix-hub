@@ -178,6 +178,8 @@ async def read_root(request: Request):
 
 @app.post("/ask")
 async def ask_question(request: Request):
+    import time
+    start_time = time.time()
     data = await request.json()
     query = data.get("query", "").strip()
     model = data.get("model", "all")
@@ -273,9 +275,12 @@ async def ask_question(request: Request):
                 full_answer += chunk
                 yield f"data: {json.dumps({'text': chunk}, ensure_ascii=False)}\n\n"
             
+        # Рассчитываем длительность
+        duration_sec = round(time.time() - start_time, 2)
+        
         # 3. Сохраняем диалог в историю
         if full_answer and not full_answer.startswith("\n[!] Ошибка"):
-            history_mgr.add_chat(query, full_answer, used_docs_log)
+            history_mgr.add_chat(query, full_answer, used_docs_log, duration=duration_sec)
             
         # 4. В самом конце отправляем источники
         yield f"event: sources\ndata: {json.dumps(used_docs_log, ensure_ascii=False)}\n\n"
