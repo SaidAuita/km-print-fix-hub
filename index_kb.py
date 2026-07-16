@@ -18,8 +18,58 @@ from preprocessing.importer import ForumImporter, PDFImporter
 from embeddings.factory import get_embeddings_provider
 from vector_store.factory import get_vector_store
 
+def load_existing_summaries(index_dir):
+    summaries = {}
+    
+    # 1. Сначала пытаемся прочитать из текущей базы в index_dir
+    db_path = os.path.join(index_dir, "knowledge_base.db")
+    if os.path.exists(db_path):
+        try:
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("PRAGMA table_info(chunks)")
+            columns = [col[1] for col in cursor.fetchall()]
+            if "summary" in columns:
+                cursor.execute("SELECT chunk_id, summary FROM chunks WHERE summary IS NOT NULL AND summary != ''")
+                for chunk_id, summary in cursor.fetchall():
+                    summaries[chunk_id] = summary
+            conn.close()
+            if summaries:
+                print(f"[*] Загружено {len(summaries)} существующих саммари из '{db_path}'")
+        except Exception as e:
+            print(f"[!] Предупреждение при чтении саммари из '{db_path}': {e}")
+            
+    # 2. Если мы собираем облегченную версию (Index_anon), то дополнительно пытаемся подтянуть
+    # саммари из основной рабочей базы (Index/knowledge_base.db)
+    if index_dir == "Index_anon":
+        main_db_path = os.path.join("Index", "knowledge_base.db")
+        if os.path.exists(main_db_path):
+            try:
+                conn = sqlite3.connect(main_db_path)
+                cursor = conn.cursor()
+                cursor.execute("PRAGMA table_info(chunks)")
+                columns = [col[1] for col in cursor.fetchall()]
+                if "summary" in columns:
+                    cursor.execute("SELECT chunk_id, summary FROM chunks WHERE summary IS NOT NULL AND summary != ''")
+                    count_added = 0
+                    for chunk_id, summary in cursor.fetchall():
+                        if chunk_id not in summaries:
+                            summaries[chunk_id] = summary
+                            count_added += 1
+                    if count_added > 0:
+                        print(f"[*] Дополнительно перенесено {count_added} саммари из основной базы '{main_db_path}'")
+                conn.close()
+            except Exception as e:
+                print(f"[!] Предупреждение при чтении саммари из основной базы '{main_db_path}': {e}")
+                
+    return summaries
+
 def save_to_sqlite(index_dir, chunks, embeddings):
     db_path = os.path.join(index_dir, "knowledge_base.db")
+    
+    # Сначала считываем все существующие саммари, чтобы не потерять их при пересоздании БД
+    existing_summaries = load_existing_summaries(index_dir)
+    
     print(f"[*] Сохранение {len(chunks)} документов в SQLite FTS5 базу '{db_path}'...")
     
     if os.path.exists(db_path):
@@ -69,10 +119,13 @@ def save_to_sqlite(index_dir, chunks, embeddings):
         metadata_json = json.dumps(chunk["metadata"], ensure_ascii=False)
         source = chunk["metadata"].get("source", "tradeprint")
         
+        # Получаем сохраненное саммари, если оно существует
+        summary = existing_summaries.get(chunk_id)
+        
         # Конвертируем вектор в байты float32
         emb_bytes = np.array(emb, dtype=np.float32).tobytes()
         
-        chunks_data.append((chunk_id, thread_id, thread_title, url, chunk_index, text, metadata_json, emb_bytes, source, None))
+        chunks_data.append((chunk_id, thread_id, thread_title, url, chunk_index, text, metadata_json, emb_bytes, source, summary))
         fts_data.append((chunk_id, thread_title, text))
         
     cursor.executemany("INSERT INTO chunks VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", chunks_data)
