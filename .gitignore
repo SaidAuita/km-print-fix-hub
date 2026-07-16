@@ -31,3 +31,5 @@ embeddings/model_cache/
 scratch/
 debug_build.bat
 test.bat
+build.bat
+build_light.bat
