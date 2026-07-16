@@ -125,7 +125,7 @@
                     <span class="text-gray-500 uppercase tracking-wider text-[10px] font-bold">{{ t.forums }}:</span>
                     
                     <div class="flex flex-col items-center leading-none">
-                        <a href="https://forum.trade-print.ru/forumdisplay.php?f=13" target="_blank" class="hover:text-brand-400 transition-all">TradePrint (ru)</a>
+                        <a id="forumLinkTradePrint" href="https://forum.trade-print.ru/forumdisplay.php?f=13" target="_blank" class="text-white hover:text-brand-400 transition-all">TradePrint (ru)</a>
                         {% if sync_dates.tradeprint %}
                         <span class="text-[10px] text-blue-400/90 font-semibold mt-1" title="Последняя запись в базе">
                             {% if sync_dates.tradeprint.date %}{{ sync_dates.tradeprint.date }} ({{ sync_dates.tradeprint.count }}){% else %}{{ sync_dates.tradeprint }}{% endif %}
@@ -136,7 +136,7 @@
                     <span class="text-gray-700 select-none">•</span>
                     
                     <div class="flex flex-col items-center leading-none">
-                        <a href="https://www.copytechnet.com/forum/tech-support/konica-minolta/" target="_blank" class="hover:text-brand-400 transition-all">CopyTechNet (en)</a>
+                        <a id="forumLinkCopyTechNet" href="https://www.copytechnet.com/forum/tech-support/konica-minolta/" target="_blank" class="text-white hover:text-brand-400 transition-all">CopyTechNet (en)</a>
                         {% if sync_dates.copytechnet %}
                         <span class="text-[10px] text-blue-400/90 font-semibold mt-1" title="Последняя запись в базе">
                             {% if sync_dates.copytechnet.date %}{{ sync_dates.copytechnet.date }} ({{ sync_dates.copytechnet.count }}){% else %}{{ sync_dates.copytechnet }}{% endif %}
@@ -147,7 +147,7 @@
                     <span class="text-gray-700 select-none">•</span>
                     
                     <div class="flex flex-col items-center leading-none">
-                        <a href="https://www.colorprintingforum.com/community/konica-minolta-color-laser-printer-color-copier/" target="_blank" class="hover:text-brand-400 transition-all">ColorPrinting (en)</a>
+                        <a id="forumLinkColorPrinting" href="https://www.colorprintingforum.com/community/konica-minolta-color-laser-printer-color-copier/" target="_blank" class="text-white hover:text-brand-400 transition-all">ColorPrinting (en)</a>
                         {% if sync_dates.colorprinting %}
                         <span class="text-[10px] text-blue-400/90 font-semibold mt-1" title="Последняя запись в базе">
                             {% if sync_dates.colorprinting.date %}{{ sync_dates.colorprinting.date }} ({{ sync_dates.colorprinting.count }}){% else %}{{ sync_dates.colorprinting }}{% endif %}
@@ -158,7 +158,7 @@
                     <span class="text-gray-700 select-none">•</span>
                     
                     <div class="flex flex-col items-center leading-none">
-                        <a href="https://printplanet.com/forums/digital-printing-discussion.37/" target="_blank" class="hover:text-brand-400 transition-all">PrintPlanet (en)</a>
+                        <a id="forumLinkPrintPlanet" href="https://printplanet.com/forums/digital-printing-discussion.37/" target="_blank" class="text-white hover:text-brand-400 transition-all">PrintPlanet (en)</a>
                         {% if sync_dates.printplanet %}
                         <span class="text-[10px] text-blue-400/90 font-semibold mt-1" title="Последняя запись в базе">
                             {% if sync_dates.printplanet.date %}{{ sync_dates.printplanet.date }} ({{ sync_dates.printplanet.count }}){% else %}{{ sync_dates.printplanet }}{% endif %}

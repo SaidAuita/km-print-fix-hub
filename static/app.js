@@ -814,6 +814,7 @@ const sourceFilterSelect = document.getElementById("sourceFilterSelect");
 if (sourceFilterSelect) {
     sourceFilterSelect.addEventListener("change", function() {
         saveLastSelection({ LAST_SOURCE_FILTER: this.value });
+        updateForumHighlight();
     });
 }
 
@@ -821,6 +822,7 @@ const forumLangSelect = document.getElementById("forumLangSelect");
 if (forumLangSelect) {
     forumLangSelect.addEventListener("change", function() {
         saveLastSelection({ LAST_FORUM_LANG: this.value });
+        updateForumHighlight();
     });
 }
 
@@ -1013,3 +1015,48 @@ if (navPageInputEl) {
         }
     });
 }
+
+// Функция для подсветки активных форумов в шапке
+function updateForumHighlight() {
+    const sourceFilter = document.getElementById("sourceFilterSelect")?.value || "auto";
+    const forumLang = document.getElementById("forumLangSelect")?.value || "all";
+    
+    const tpLink = document.getElementById("forumLinkTradePrint");
+    const ctnLink = document.getElementById("forumLinkCopyTechNet");
+    const cpLink = document.getElementById("forumLinkColorPrinting");
+    const ppLink = document.getElementById("forumLinkPrintPlanet");
+    
+    if (!tpLink || !ctnLink || !cpLink || !ppLink) return;
+    
+    const links = [tpLink, ctnLink, cpLink, ppLink];
+    
+    // Сброс на белый цвет
+    links.forEach(link => {
+        link.classList.remove("text-green-400", "font-semibold");
+        link.classList.add("text-white");
+    });
+    
+    // Если только официальные руководства - все остаются белыми
+    if (sourceFilter === "official") {
+        return;
+    }
+    
+    // Подсветка зеленым
+    if (forumLang === "ru") {
+        tpLink.classList.remove("text-white");
+        tpLink.classList.add("text-green-400", "font-semibold");
+    } else if (forumLang === "en") {
+        [ctnLink, cpLink, ppLink].forEach(link => {
+            link.classList.remove("text-white");
+            link.classList.add("text-green-400", "font-semibold");
+        });
+    } else { // all
+        links.forEach(link => {
+            link.classList.remove("text-white");
+            link.classList.add("text-green-400", "font-semibold");
+        });
+    }
+}
+
+// Запускаем первоначальную подсветку при загрузке страницы
+updateForumHighlight();
