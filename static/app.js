@@ -307,9 +307,10 @@ function renderSources(sources) {
             ? '<span class="text-[9px] text-blue-400 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded uppercase tracking-wider">Official</span>' 
             : '<span class="text-[9px] text-yellow-500 font-bold bg-yellow-500/10 px-1.5 py-0.5 rounded uppercase tracking-wider">Forum</span>';
             
+        const srcLang = (src.source === "tradeprint") ? "RU" : "EN";
         const detailText = isOfficial 
             ? `<span class="truncate text-blue-300">PDF: ${src.document || src.title}</span>`
-            : `<span class="truncate">${window.TRANSLATIONS.author_prefix || 'Author'}: ${authors}</span>`;
+            : `<span class="text-gray-400 font-semibold mr-1.5">[${srcLang}]</span><span class="truncate">${window.TRANSLATIONS.author_prefix || 'Author'}: ${authors}</span>`;
             
         const extraText = isOfficial 
             ? `<span class="text-blue-300 font-semibold">${window.TRANSLATIONS.page_prefix || 'Page'} ${src.page || 1}</span>`
@@ -623,6 +624,8 @@ async function saveSettings(e) {
     settings["LAST_STRICT_MODE"] = document.getElementById("strictModeCheckModal").checked;
     settings["LAST_ENABLE_CONTEXT_OPTIMIZER"] = document.getElementById("contextOptimizerCheckModal").checked;
     settings["LAST_DIRECT_FORUM_LINKS"] = document.getElementById("directForumLinksCheckModal").checked;
+    settings["TRANSLATE_THREAD_TITLES"] = document.getElementById("translateThreadTitlesCheckModal").checked;
+    settings["LAST_TRANSLATE_THREAD_TITLES"] = document.getElementById("translateThreadTitlesCheckModal").checked;
 
     
     const contextModeSelect = form.querySelector("[name='LLM_CONTEXT_MODE']");

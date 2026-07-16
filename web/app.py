@@ -220,6 +220,38 @@ async def ask_question(request: Request):
             "document": doc.get("metadata", {}).get("document", "")
         })
 
+    # Перевод названий тем форумов на язык интерфейса (опционально)
+    translate_titles = config_mgr.get("TRANSLATE_THREAD_TITLES", True)
+    target_lang = config_mgr.get("LAST_LANG", "ru")
+    
+    if translate_titles:
+        unique_threads = {}
+        for doc in used_docs_log:
+            th_id = doc["thread_id"]
+            if th_id and th_id != "official" and th_id not in unique_threads:
+                unique_threads[th_id] = {
+                    "title": doc["title"],
+                    "source": doc["source"]
+                }
+        
+        translated_titles = {}
+        for th_id, th_info in unique_threads.items():
+            orig_title = th_info["title"]
+            source_lang = "ru" if th_info["source"] == "tradeprint" else "en"
+            
+            if source_lang != target_lang:
+                try:
+                    translated = llm_client.translate_text(orig_title, target_lang)
+                    if translated and not translated.startswith("[Error translating text") and not translated.startswith("[!"):
+                        translated_titles[th_id] = translated
+                except Exception as e:
+                    print(f"[!] Ошибка перевода названия темы '{orig_title}': {e}")
+                    
+        for doc in used_docs_log:
+            th_id = doc["thread_id"]
+            if th_id in translated_titles:
+                doc["title"] = translated_titles[th_id]
+
     def sse_generator():
         # 1. Сначала отправляем отладочную информацию по поиску (Debug)
         yield f"event: debug\ndata: {json.dumps(debug_info, ensure_ascii=False)}\n\n"

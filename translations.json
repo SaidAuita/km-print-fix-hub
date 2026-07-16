@@ -182,7 +182,8 @@
         "context_mode_off": "Отключен (только поиск)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Макс. слов для «Качества»",
-        "settings_speed_words": "Макс. слов для «Скорости / OFF»"
+        "settings_speed_words": "Макс. слов для «Скорости / OFF»",
+        "translate_thread_titles": "Переводить названия тем"
     },
     "en": {
         "lang_code": "en",
@@ -367,7 +368,8 @@
         "context_mode_off": "Disabled (search only)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Max words for Quality",
-        "settings_speed_words": "Max words for Speed / OFF"
+        "settings_speed_words": "Max words for Speed / OFF",
+        "translate_thread_titles": "Translate thread titles"
     },
     "de": {
         "lang_code": "de",
@@ -552,7 +554,8 @@
         "context_mode_off": "Deaktiviert (nur Suche)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Max. Wörter für Qualität",
-        "settings_speed_words": "Max. Wörter für Geschwindigkeit / OFF"
+        "settings_speed_words": "Max. Wörter für Geschwindigkeit / OFF",
+        "translate_thread_titles": "Thementitel übersetzen"
     },
     "fr": {
         "lang_code": "fr",
@@ -737,7 +740,8 @@
         "context_mode_off": "Désactivé (recherche uniquement)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Mots max pour Qualité",
-        "settings_speed_words": "Mots max pour Vitesse / OFF"
+        "settings_speed_words": "Mots max pour Vitesse / OFF",
+        "translate_thread_titles": "Traduire les titres des fils"
     },
     "es": {
         "lang_code": "es",
@@ -922,7 +926,8 @@
         "context_mode_off": "Desactivado (solo búsqueda)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Máx. palabras para Calidad",
-        "settings_speed_words": "Máx. palabras para Velocidad / OFF"
+        "settings_speed_words": "Máx. palabras para Velocidad / OFF",
+        "translate_thread_titles": "Traducir títulos de hilos"
     },
     "it": {
         "lang_code": "it",
@@ -1107,7 +1112,8 @@
         "context_mode_off": "Disabilitato (solo ricerca)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Parole max per Qualità",
-        "settings_speed_words": "Parole max per Velocità / OFF"
+        "settings_speed_words": "Parole max per Velocità / OFF",
+        "translate_thread_titles": "Traduci i titoli delle discussioni"
     },
     "zh": {
         "lang_code": "zh",
@@ -1292,7 +1298,8 @@
         "context_mode_off": "已禁用 (仅搜索)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "“质量”模式最大字数",
-        "settings_speed_words": "“速度/关闭”模式最大字数"
+        "settings_speed_words": "“速度/关闭”模式最大字数",
+        "translate_thread_titles": "翻译主题标题"
     },
     "ja": {
         "lang_code": "ja",
@@ -1477,7 +1484,8 @@
         "context_mode_off": "無効 (検索のみ)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "「品質」の最大語数",
-        "settings_speed_words": "「速度/オフ」の最大語数"
+        "settings_speed_words": "「速度/オフ」の最大語数",
+        "translate_thread_titles": "スレッドタイトルの翻訳"
     },
     "pt": {
         "lang_code": "pt",
@@ -1847,6 +1855,7 @@
         "context_mode_off": "Devre dışı (yalnızca arama)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Kalite için maksimum kelime",
-        "settings_speed_words": "Hız / OFF için maksimum kelime"
+        "settings_speed_words": "Hız / OFF için maksimum kelime",
+        "translate_thread_titles": "Konu başlıklarını çevir"
     }
 }
