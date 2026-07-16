@@ -93,7 +93,7 @@ class SearchCoordinator:
                     {"role": "user", "content": query_text}
                 ],
                 "temperature": 0.0,
-                "max_tokens": 15,
+                "max_tokens": 512,
                 "stream": False
             }
             
@@ -156,7 +156,7 @@ class SearchCoordinator:
                     {"role": "user", "content": query_text}
                 ],
                 "temperature": 0.0,
-                "max_tokens": 60,
+                "max_tokens": 512,
                 "stream": False
             }
             
@@ -457,9 +457,39 @@ class SearchCoordinator:
             final_score = model_score + 0.6 * semantic_val + official_bonus
             boosted_results.append((doc, final_score))
             
-        # Повторно сортируем по взвешенному скору
-        boosted_results.sort(key=lambda x: x[1], reverse=True)
-        reranked = boosted_results[:rerank_k]
+        # Повторно сортируем по взвешенному скору с балансировкой по языкам для режима 'all'
+        if forum_lang == "all":
+            ru_boosted = []
+            en_boosted = []
+            for doc, score in boosted_results:
+                doc_source = doc.get("metadata", {}).get("source", "tradeprint")
+                if doc_source == "tradeprint":
+                    ru_boosted.append((doc, score))
+                else:
+                    en_boosted.append((doc, score))
+            
+            ru_boosted.sort(key=lambda x: x[1], reverse=True)
+            en_boosted.sort(key=lambda x: x[1], reverse=True)
+            
+            # Распределяем по 50% лимита на каждый язык
+            half_k = rerank_k // 2
+            selected_ru = ru_boosted[:half_k]
+            selected_en = en_boosted[:half_k]
+            
+            # Дозаполняем, если с одной стороны не хватило до лимита
+            if len(selected_ru) < half_k:
+                extra = half_k - len(selected_ru)
+                selected_en += en_boosted[half_k : half_k + extra]
+            elif len(selected_en) < half_k:
+                extra = half_k - len(selected_en)
+                selected_ru += ru_boosted[half_k : half_k + extra]
+                
+            merged = selected_ru + selected_en
+            merged.sort(key=lambda x: x[1], reverse=True)
+            reranked = merged[:rerank_k]
+        else:
+            boosted_results.sort(key=lambda x: x[1], reverse=True)
+            reranked = boosted_results[:rerank_k]
 
         # Оптимизация контекста (Context Optimizer)
         opt_info = None
