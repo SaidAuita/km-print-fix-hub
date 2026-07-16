@@ -381,7 +381,22 @@ class SearchCoordinator:
             # чтобы сохранить исходный правильный порядок лексического поиска FTS5.
             reranked = [(doc, score) for doc, score in fts_results]
         else:
-            reranked = self.reranker.rerank(query_text, candidate_docs, k=len(candidate_docs))
+            # Разделяем кандидатов по языку источника для точного реранжирования
+            ru_candidates = []
+            en_candidates = []
+            for doc in candidate_docs:
+                doc_source = doc.get("metadata", {}).get("source", "tradeprint")
+                if doc_source == "tradeprint":
+                    ru_candidates.append(doc)
+                else:
+                    en_candidates.append(doc)
+            
+            reranked_ru = self.reranker.rerank(ru_query, ru_candidates, k=len(ru_candidates)) if ru_candidates else []
+            reranked_en = self.reranker.rerank(en_query, en_candidates, k=len(en_candidates)) if en_candidates else []
+            
+            # Объединяем и сортируем заново по скору схожести
+            reranked = reranked_ru + reranked_en
+            reranked.sort(key=lambda x: x[1], reverse=True)
         
         # 6. Бустинг и скоринг оценок на основе совпадения с моделью (Section 4, task_05.md)
         # score = model_score + 0.6 * semantic_val
