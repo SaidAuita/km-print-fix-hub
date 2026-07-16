@@ -125,8 +125,8 @@ class SearchCoordinator:
             
         # If it has Russian characters and no other non-ASCII characters,
         # we only need to translate to English.
-        has_russian = any(c in 'аяАЯёЁ' for c in query_text)
-        has_other_languages = any(ord(c) >= 128 and c not in 'аяАЯёЁ' and not c.lower() in 'abcdefghijklmnopqrstuvwxyz' for c in query_text)
+        has_russian = any('\u0400' <= c <= '\u04FF' for c in query_text)
+        has_other_languages = any(ord(c) >= 128 and not ('\u0400' <= c <= '\u04FF') for c in query_text)
         
         if has_russian and not has_other_languages:
             en_query = self._translate_to_target(query_text, "English")
@@ -223,7 +223,7 @@ class SearchCoordinator:
 
         # Получаем английский и русский варианты запроса для поиска по разноязычным базам
         if forum_lang == "ru":
-            has_russian = any(c in 'аяАЯёЁ' for c in query_text)
+            has_russian = any('\u0400' <= c <= '\u04FF' for c in query_text)
             if not has_russian:
                 ru_query = self._translate_to_target(query_text, "Russian")
             else:
@@ -238,8 +238,8 @@ class SearchCoordinator:
             ru_query = en_query
         else: # forum_lang == "all"
             is_english = all(ord(c) < 128 for c in query_text)
-            has_russian = any(c in 'аяАЯёЁ' for c in query_text)
-            has_other_languages = any(ord(c) >= 128 and c not in 'аяАЯёЁ' and not c.lower() in 'abcdefghijklmnopqrstuvwxyz' for c in query_text)
+            has_russian = any('\u0400' <= c <= '\u04FF' for c in query_text)
+            has_other_languages = any(ord(c) >= 128 and not ('\u0400' <= c <= '\u04FF') for c in query_text)
             
             if is_english:
                 en_query = query_text
