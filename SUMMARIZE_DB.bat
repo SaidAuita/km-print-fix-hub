@@ -1,5 +1,5 @@
 @echo off
-title KM Print Fix Hub - Database Chunk Summarization Utility (v 1.10)
+title KM Print Fix Hub - Database Chunk Summarization Utility (v 1.20)
 echo =======================================================================
 echo          KM Print Fix Hub - Database Summarization Tool
 echo =======================================================================

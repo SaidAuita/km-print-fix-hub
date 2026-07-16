@@ -2,7 +2,7 @@
     "ru": {
         "lang_code": "ru",
         "lang_name": "Русский",
-        "title": "KM Print Fix Hub v 1.10 (2026-07-12)",
+        "title": "KM Print Fix Hub v 1.20 (2026-07-16)",
         "active_model": "Модель",
         "knowledge_base": "База знаний",
         "search_diagnostics": "Диагностика поиска (Debug)",
@@ -183,12 +183,13 @@
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Макс. слов для «Качества»",
         "settings_speed_words": "Макс. слов для «Скорости / OFF»",
-        "translate_thread_titles": "Переводить названия тем"
+        "translate_thread_titles": "Переводить названия тем",
+        "response_time": "Время ответа"
     },
     "en": {
         "lang_code": "en",
         "lang_name": "English",
-        "title": "KM Print Fix Hub v 1.10 (2026-07-12)",
+        "title": "KM Print Fix Hub v 1.20 (2026-07-16)",
         "active_model": "Model",
         "knowledge_base": "Knowledge Base",
         "search_diagnostics": "Search Diagnostics (Debug)",
@@ -369,12 +370,13 @@
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Max words for Quality",
         "settings_speed_words": "Max words for Speed / OFF",
-        "translate_thread_titles": "Translate thread titles"
+        "translate_thread_titles": "Translate thread titles",
+        "response_time": "Response time"
     },
     "de": {
         "lang_code": "de",
         "lang_name": "Deutsch",
-        "title": "KM Print Fix Hub v 1.10 (2026-07-12)",
+        "title": "KM Print Fix Hub v 1.20 (2026-07-16)",
         "active_model": "Modell",
         "knowledge_base": "Wissensdatenbank",
         "search_diagnostics": "Suchdiagnose (Debug)",
@@ -555,12 +557,13 @@
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Max. Wörter für Qualität",
         "settings_speed_words": "Max. Wörter für Geschwindigkeit / OFF",
-        "translate_thread_titles": "Thementitel übersetzen"
+        "translate_thread_titles": "Thementitel übersetzen",
+        "response_time": "Antwortzeit"
     },
     "fr": {
         "lang_code": "fr",
         "lang_name": "Français",
-        "title": "KM Print Fix Hub v 1.10 (2026-07-12)",
+        "title": "KM Print Fix Hub v 1.20 (2026-07-16)",
         "active_model": "Modèle",
         "knowledge_base": "Base de connaissances",
         "search_diagnostics": "Diagnostic de recherche (Debug)",
@@ -741,12 +744,13 @@
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Mots max pour Qualité",
         "settings_speed_words": "Mots max pour Vitesse / OFF",
-        "translate_thread_titles": "Traduire les titres des fils"
+        "translate_thread_titles": "Traduire les titres des fils",
+        "response_time": "Temps de réponse"
     },
     "es": {
         "lang_code": "es",
         "lang_name": "Español",
-        "title": "KM Print Fix Hub v 1.10 (2026-07-12)",
+        "title": "KM Print Fix Hub v 1.20 (2026-07-16)",
         "active_model": "Modelo",
         "knowledge_base": "Base de conocimientos",
         "search_diagnostics": "Diagnóstico de búsqueda (Debug)",
@@ -927,12 +931,13 @@
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Máx. palabras para Calidad",
         "settings_speed_words": "Máx. palabras para Velocidad / OFF",
-        "translate_thread_titles": "Traducir títulos de hilos"
+        "translate_thread_titles": "Traducir títulos de hilos",
+        "response_time": "Tiempo de respuesta"
     },
     "it": {
         "lang_code": "it",
         "lang_name": "Italiano",
-        "title": "KM Print Fix Hub v 1.10 (2026-07-12)",
+        "title": "KM Print Fix Hub v 1.20 (2026-07-16)",
         "active_model": "Modello",
         "knowledge_base": "Knowledge Base",
         "search_diagnostics": "Diagnostica di ricerca (Debug)",
@@ -1113,12 +1118,13 @@
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Parole max per Qualità",
         "settings_speed_words": "Parole max per Velocità / OFF",
-        "translate_thread_titles": "Traduci i titoli delle discussioni"
+        "translate_thread_titles": "Traduci i titoli delle discussioni",
+        "response_time": "Tempo di risposta"
     },
     "zh": {
         "lang_code": "zh",
         "lang_name": "中文",
-        "title": "KM Print Fix Hub v 1.10 (2026-07-12)",
+        "title": "KM Print Fix Hub v 1.20 (2026-07-16)",
         "active_model": "型号",
         "knowledge_base": "知识库",
         "search_diagnostics": "搜索诊断 (Debug)",
@@ -1299,12 +1305,13 @@
         "indicator_rag_off": "OFF",
         "settings_quality_words": "“质量”模式最大字数",
         "settings_speed_words": "“速度/关闭”模式最大字数",
-        "translate_thread_titles": "翻译主题标题"
+        "translate_thread_titles": "翻译主题标题",
+        "response_time": "响应时间"
     },
     "ja": {
         "lang_code": "ja",
         "lang_name": "日本語",
-        "title": "KM Print Fix Hub v 1.10 (2026-07-12)",
+        "title": "KM Print Fix Hub v 1.20 (2026-07-16)",
         "active_model": "モデル",
         "knowledge_base": "ナレッジベース",
         "search_diagnostics": "検索診断 (デバッグ)",
@@ -1485,12 +1492,13 @@
         "indicator_rag_off": "OFF",
         "settings_quality_words": "「品質」の最大語数",
         "settings_speed_words": "「速度/オフ」の最大語数",
-        "translate_thread_titles": "スレッドタイトルの翻訳"
+        "translate_thread_titles": "スレッドタイトルの翻訳",
+        "response_time": "応答時間"
     },
     "pt": {
         "lang_code": "pt",
         "lang_name": "Português",
-        "title": "KM Print Fix Hub v 1.10 (2026-07-12)",
+        "title": "KM Print Fix Hub v 1.20 (2026-07-16)",
         "active_model": "Modelo",
         "knowledge_base": "Base de Conhecimento",
         "search_diagnostics": "Diagnóstico de Busca (Debug)",
@@ -1675,7 +1683,7 @@
     "tr": {
         "lang_code": "tr",
         "lang_name": "Türkçe",
-        "title": "KM Print Fix Hub v 1.10 (2026-07-12)",
+        "title": "KM Print Fix Hub v 1.20 (2026-07-16)",
         "active_model": "Model",
         "knowledge_base": "Bilgi Bankası",
         "search_diagnostics": "Arama Teşhisi (Debug)",
@@ -1856,6 +1864,7 @@
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Kalite için maksimum kelime",
         "settings_speed_words": "Hız / OFF için maksimum kelime",
-        "translate_thread_titles": "Konu başlıklarını çevir"
+        "translate_thread_titles": "Konu başlıklarını çevir",
+        "response_time": "Yanıt süresi"
     }
 }

@@ -44,6 +44,14 @@ RAG (Retrieval-Augmented Generation) search engine and interactive technical sup
    ```
 3. Open the application, open the **Settings** modal, select **Ollama** as your LLM Provider, and set the LLM Model Name to `qwen2.5:4b`. You can also configure Ollama as your Embedding Provider (with model `nomic-embed-text`).
 
+**Option C: LM Studio - CPU only**
+1. Install [LM Studio](https://lmstudio.ai/).
+2. Download and select the recommended model: `google/gemma-4-e2b` (Q4_K_M).
+3. Go to the "Local Server" tab and click **Start Server**.
+4. > [!IMPORTANT]
+   > Make sure to set the **Context Length** in LM Studio to **11,000** or higher.
+5. Choose RAG mode: Speed (from 1000). If it yields too few forum search documents, try raising this value (e.g., to 2000), but note that this may slow down the LLM response. Tested on i3-12100F, 16GB RAM, without GPU.
+
 #### 2. Install Python & Dependencies
 1. Install Python 3.10 or newer.
 2. Clone the repository code and install requirements:
@@ -112,6 +120,14 @@ If a specific Konica Minolta model is missing from the dropdown or is not recogn
    ollama pull qwen2.5:4b
    ```
 3. Откройте приложение, перейдите в **Настройки**, выберите **Ollama** в качестве провайдера LLM и укажите название модели `qwen2.5:4b`. Также вы можете использовать Ollama в качестве провайдера эмбеддингов (с моделью `nomic-embed-text`).
+
+**Вариант C: LM Studio - только на CPU**
+1. Установите [LM Studio](https://lmstudio.ai/).
+2. Скачайте и выберите рекомендованную модель: `google/gemma-4-e2b` (Q4_K_M).
+3. Перейдите во вкладку "Local Server" и нажмите **Start Server**.
+4. > [!IMPORTANT]
+   > Обязательно выставите параметр **Context Length** (Размер контекста) в LM Studio на значение **11 000** или более.
+5. Выбирвйте режимм RAG: Скорость (от 1000). Если выдает мало документов из поиска по форуму, пробуйте поднять значение выше - например 2000. Но это может замедлить ответ от LLM.  Проверено на i3-12100F, 16Гб ОЗУ, без GPU.
 
 #### 2. Установка Python и зависимостей
 1. Установите Python 3.10 или новее.

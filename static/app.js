@@ -64,6 +64,8 @@ async function submitQuery() {
     const query = queryInput.value.trim();
     if (!query) return;
 
+    const startTime = performance.now();
+
     // Блокируем интерфейс
     queryInput.value = "";
     queryInput.disabled = true;
@@ -79,6 +81,9 @@ async function submitQuery() {
     document.getElementById("sourcesBlock").classList.add("hidden");
     document.getElementById("sourcesList").innerHTML = "";
     document.getElementById("debugBlock").classList.add("hidden");
+    
+    const timeBlock = document.getElementById("generationTimeBlock");
+    if (timeBlock) timeBlock.classList.add("hidden");
     
     // Сбрасываем отладочные списки
     document.getElementById("ftsDebugList").innerHTML = "";
@@ -203,6 +208,19 @@ async function submitQuery() {
                 }
             }
         }
+        
+        const durationSec = (performance.now() - startTime) / 1000.0;
+        const mins = Math.floor(durationSec / 60);
+        const secs = Math.floor(durationSec % 60);
+        const formattedTime = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        
+        const showTimeBlock = document.getElementById("generationTimeBlock");
+        const showTimeText = document.getElementById("generationTimeText");
+        if (showTimeBlock && showTimeText) {
+            const prefix = window.TRANSLATIONS.response_time || "Response time";
+            showTimeText.textContent = `${prefix}: ${formattedTime}`;
+            showTimeBlock.classList.remove("hidden");
+        }
     } catch (error) {
         document.getElementById("answerText").innerHTML = `<span class="text-red-400 font-semibold">[!] ${window.TRANSLATIONS.llm_error_prefix || 'Error'}: ${error.message}</span>`;
     } finally {
@@ -290,6 +308,36 @@ function renderDebugInfo(debugInfo) {
     });
 }
 
+function formatAuthorsList(authorsList) {
+    if (!authorsList || authorsList.length === 0) {
+        return "forum";
+    }
+    const isRu = (window.TRANSLATIONS && window.TRANSLATIONS.lang_code === "ru");
+    const userWord = isRu ? "Пользователи" : "Users";
+    const anonPattern = /^(?:Пользователь|User)\s+(\d+)$/i;
+    let anonNumbers = [];
+    let realNames = [];
+    
+    authorsList.forEach(author => {
+        const match = author.trim().match(anonPattern);
+        if (match) {
+            anonNumbers.push(parseInt(match[1]));
+        } else {
+            realNames.push(author.trim());
+        }
+    });
+    
+    if (anonNumbers.length > 0) {
+        anonNumbers.sort((a, b) => a - b);
+        const anonFormatted = `${userWord} ${anonNumbers.join(",")}`;
+        if (realNames.length > 0) {
+            return `${realNames.join(", ")}, ${anonFormatted}`;
+        }
+        return anonFormatted;
+    }
+    return authorsList.join(", ");
+}
+
 // Отрисовка источников под ответом
 function renderSources(sources) {
     if (!sources || sources.length === 0) return;
@@ -300,7 +348,7 @@ function renderSources(sources) {
     
     sources.forEach(src => {
         const isOfficial = src.source === "official";
-        const authors = src.authors.length > 0 ? src.authors.join(", ") : "forum";
+        const authors = formatAuthorsList(src.authors);
         const posts = src.posts.length > 0 ? `${window.TRANSLATIONS.posts_label || 'Posts'}: ${src.posts.join(", ")}` : "";
         
         const badge = isOfficial 
@@ -310,7 +358,7 @@ function renderSources(sources) {
         const srcLang = (src.source === "tradeprint") ? "RU" : "EN";
         const detailText = isOfficial 
             ? `<span class="truncate text-blue-300">PDF: ${src.document || src.title}</span>`
-            : `<span class="text-gray-400 font-semibold mr-1.5">[${srcLang}]</span><span class="truncate">${window.TRANSLATIONS.author_prefix || 'Author'}: ${authors}</span>`;
+            : `<span class="text-gray-400 font-semibold mr-1.5">[${srcLang}]</span><span>${window.TRANSLATIONS.author_prefix || 'Author'}: ${authors}</span>`;
             
         const extraText = isOfficial 
             ? `<span class="text-blue-300 font-semibold">${window.TRANSLATIONS.page_prefix || 'Page'} ${src.page || 1}</span>`
