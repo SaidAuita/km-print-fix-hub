@@ -198,74 +198,61 @@ class SearchCoordinator:
         
         # 1. Определяем список разрешенных моделей для поиска
         allowed_models = None
-        if model != "all" and search_mode != "all":
-            if search_mode == "only":
-                allowed_models = [model]
-            elif search_mode == "related":
-                model_key = model.upper()
-                related = self.related_models.get(model_key)
-                if not related and model_key.startswith('C'):
-                    related = self.related_models.get(model_key[1:])
-                if not related:
-                    related = []
-                
-                # Расширяем список разрешенных моделей с префиксом 'C' и без него
-                raw_list = [model] + related
-                expanded = []
-                for m in raw_list:
-                    m_clean = m.strip()
-                    expanded.append(m_clean)
-                    if m_clean.upper().startswith('C'):
-                        expanded.append(m_clean[1:])
-                    else:
-                        expanded.append('C' + m_clean)
-                allowed_models = list(set(expanded))
+        if model != "all":
+            model_key = model.upper()
+            related = self.related_models.get(model_key)
+            if not related and model_key.startswith('C'):
+                related = self.related_models.get(model_key[1:])
+            if not related:
+                related = []
+            
+            raw_list = [model] + (related if search_mode in ["all", "related"] else [])
+            expanded = []
+            for m in raw_list:
+                m_clean = m.strip()
+                expanded.append(m_clean)
+                if m_clean.upper().startswith('C'):
+                    expanded.append(m_clean[1:])
+                else:
+                    expanded.append('C' + m_clean)
+            allowed_models = list(set(expanded))
 
         # Получаем английский и русский варианты запроса для поиска по разноязычным базам
-        if forum_lang == "ru":
-            has_russian = any('\u0400' <= c <= '\u04FF' for c in query_text)
-            if not has_russian:
-                ru_query = self._translate_to_target(query_text, "Russian")
-            else:
-                ru_query = query_text
-            en_query = ru_query
-        elif forum_lang == "en":
-            is_english = all(ord(c) < 128 for c in query_text)
-            if not is_english:
-                en_query = self._translate_to_target(query_text, "English")
-            else:
-                en_query = query_text
-            ru_query = en_query
-        else: # forum_lang == "all"
-            is_english = all(ord(c) < 128 for c in query_text)
-            has_russian = any('\u0400' <= c <= '\u04FF' for c in query_text)
-            has_other_languages = any(ord(c) >= 128 and not ('\u0400' <= c <= '\u04FF') for c in query_text)
-            
-            if is_english:
-                en_query = query_text
-                ru_query = self._translate_to_target(query_text, "Russian")
-            elif has_russian and not has_other_languages:
-                ru_query = query_text
-                en_query = self._translate_to_target(query_text, "English")
-            else:
-                en_query, ru_query = self._translate_query_bilingual(query_text)
+        is_english = all(ord(c) < 128 for c in query_text)
+        has_russian = any('\u0400' <= c <= '\u04FF' for c in query_text)
+        has_other_languages = any(ord(c) >= 128 and not ('\u0400' <= c <= '\u04FF') for c in query_text)
+        
+        if is_english:
+            en_query = query_text
+            ru_query = self._translate_to_target(query_text, "Russian")
+        elif has_russian and not has_other_languages:
+            ru_query = query_text
+            en_query = self._translate_to_target(query_text, "English")
+        else:
+            en_query, ru_query = self._translate_query_bilingual(query_text)
 
         # 2. Полнотекстовый поиск (FTS5) с фильтрацией на уровне SQL
         if source_filter == "official":
-            fts_results = self.fts_searcher.search(en_query, k=fts_k, allowed_models=allowed_models, source_filter=source_filter)
-        elif source_filter in ["forum", "auto"]:
-            if en_query != ru_query:
-                results_ru = self.fts_searcher.search(ru_query, k=fts_k, allowed_models=allowed_models, source_filter=source_filter)
-                results_en = self.fts_searcher.search(en_query, k=fts_k, allowed_models=allowed_models, source_filter=source_filter)
-                seen_ids = set()
-                fts_results = []
-                for doc, score in results_ru + results_en:
-                    if doc["id"] not in seen_ids:
-                        seen_ids.add(doc["id"])
-                        fts_results.append((doc, score))
-            else:
-                target_q = ru_query if forum_lang == "ru" else en_query
-                fts_results = self.fts_searcher.search(target_q, k=fts_k, allowed_models=allowed_models, source_filter=source_filter)
+            fts_results = self.fts_searcher.search(en_query, k=fts_k, allowed_models=allowed_models, source_filter="official")
+        elif source_filter == "forum":
+            results_ru = self.fts_searcher.search(ru_query, k=fts_k, allowed_models=allowed_models, source_filter="forum")
+            results_en = self.fts_searcher.search(en_query, k=fts_k, allowed_models=allowed_models, source_filter="forum")
+            seen_ids = set()
+            fts_results = []
+            for doc, score in results_ru + results_en:
+                if doc["id"] not in seen_ids:
+                    seen_ids.add(doc["id"])
+                    fts_results.append((doc, score))
+        elif source_filter == "auto":
+            results_ru = self.fts_searcher.search(ru_query, k=fts_k, allowed_models=allowed_models, source_filter="forum")
+            results_en = self.fts_searcher.search(en_query, k=fts_k, allowed_models=allowed_models, source_filter="forum")
+            results_off = self.fts_searcher.search(en_query, k=fts_k, allowed_models=allowed_models, source_filter="official")
+            seen_ids = set()
+            fts_results = []
+            for doc, score in results_ru + results_en + results_off:
+                if doc["id"] not in seen_ids:
+                    seen_ids.add(doc["id"])
+                    fts_results.append((doc, score))
         else:
             fts_results = self.fts_searcher.search(query_text, k=fts_k, allowed_models=allowed_models, source_filter=source_filter)
             
@@ -289,26 +276,46 @@ class SearchCoordinator:
             vector_results = []
         else:
             # Получаем кандидатов векторного поиска
-            if source_filter == "official" and en_query != query_text:
+            if source_filter == "official":
                 vector_candidates = self.vector_searcher.search(en_query, k=vector_k * 5)
-            elif source_filter in ["forum", "auto"]:
-                if en_query != ru_query:
-                    candidates_ru = self.vector_searcher.search(ru_query, k=vector_k)
-                    candidates_en = self.vector_searcher.search(en_query, k=vector_k)
-                    seen_ids = set()
-                    vector_candidates = []
-                    for doc, score in candidates_ru + candidates_en:
-                        if doc["id"] not in seen_ids:
-                            seen_ids.add(doc["id"])
-                            vector_candidates.append((doc, score))
-                else:
-                    target_q = ru_query if forum_lang == "ru" else en_query
-                    vector_candidates = self.vector_searcher.search(target_q, k=vector_k * 2)
+            elif source_filter == "forum":
+                k_val = max(200, vector_k * 5) if allowed_models else vector_k
+                candidates_ru = self.vector_searcher.search(ru_query, k=k_val)
+                candidates_en = self.vector_searcher.search(en_query, k=k_val)
+                seen_ids = set()
+                vector_candidates = []
+                for doc, score in candidates_ru + candidates_en:
+                    if doc["id"] not in seen_ids:
+                        seen_ids.add(doc["id"])
+                        vector_candidates.append((doc, score))
+            elif source_filter == "auto":
+                k_val = max(200, vector_k * 5) if allowed_models else vector_k
+                candidates_ru = self.vector_searcher.search(ru_query, k=k_val)
+                candidates_en = self.vector_searcher.search(en_query, k=k_val)
+                candidates_off = self.vector_searcher.search(en_query, k=k_val)
+                seen_ids = set()
+                vector_candidates = []
+                for doc, score in candidates_ru + candidates_en + candidates_off:
+                    if doc["id"] not in seen_ids:
+                        seen_ids.add(doc["id"])
+                        vector_candidates.append((doc, score))
             else:
                 needs_filtering = bool(allowed_models or (source_filter and source_filter != "auto"))
                 k_to_search = max(200, vector_k * 5) if needs_filtering else vector_k
                 vector_candidates = self.vector_searcher.search(query_text, k=k_to_search)
             
+            def _match_model(m_target, doc_m_list):
+                t = m_target.lower().strip()
+                for dm in doc_m_list:
+                    d = dm.lower().strip()
+                    if t == d or t in d or d in t:
+                        return True
+                    t_base = t.rstrip('eps')
+                    d_base = d.rstrip('eps')
+                    if t_base and d_base and (t_base == d_base or t_base in d_base or d_base in t_base):
+                        return True
+                return False
+
             filtered_vector = []
             for doc, score in vector_candidates:
                 # Определяем все подходящие модели
@@ -332,7 +339,7 @@ class SearchCoordinator:
                 # Фильтруем по моделям, если задано
                 if allowed_models:
                     if doc_models != ["KM-GENERAL"]:
-                        match = any(m.lower() in [dm.lower() for dm in doc_models] for m in allowed_models)
+                        match = any(_match_model(m, doc_models) for m in allowed_models)
                     else:
                         combined = (doc["thread_title"] + " " + doc["text"]).lower().replace('с', 'c')
                         match = any(m.lower() in combined for m in allowed_models)
@@ -340,7 +347,8 @@ class SearchCoordinator:
                         continue
                 
                 filtered_vector.append((doc, score))
-                if len(filtered_vector) >= vector_k:
+                max_vec_needed = vector_k * 3 if source_filter == "auto" else vector_k
+                if len(filtered_vector) >= max_vec_needed:
                     break
             vector_results = filtered_vector
 
@@ -430,13 +438,13 @@ class SearchCoordinator:
                 doc_models = self._detect_all_models(doc)
                 
                 # Check strict match
-                if any(m.lower() == model.lower() for m in doc_models):
+                if _match_model(model, doc_models):
                     model_score = 1.0
                     doc["model"] = model.upper()
                 # Check related match
-                elif allowed_models and any(m.lower() in [dm.lower() for dm in doc_models] for m in allowed_models):
+                elif allowed_models and any(_match_model(m, doc_models) for m in allowed_models):
                     model_score = 0.7
-                    matched_related = [m for m in allowed_models if m.lower() in [dm.lower() for dm in doc_models]]
+                    matched_related = [m for m in allowed_models if _match_model(m, doc_models)]
                     if matched_related:
                         doc["model"] = matched_related[0].upper()
                 # Check general
@@ -457,8 +465,36 @@ class SearchCoordinator:
             final_score = model_score + 0.6 * semantic_val + official_bonus
             boosted_results.append((doc, final_score))
             
-        # Повторно сортируем по взвешенному скору с балансировкой по языкам для режима 'all'
-        if forum_lang == "all":
+        # Повторно сортируем по взвешенному скору с балансировкой по источникам и языкам
+        if source_filter == "auto":
+            official_boosted = []
+            forum_boosted = []
+            for doc, score in boosted_results:
+                doc_source = doc.get("metadata", {}).get("source", "tradeprint")
+                if doc_source == "official":
+                    official_boosted.append((doc, score))
+                else:
+                    forum_boosted.append((doc, score))
+            
+            official_boosted.sort(key=lambda x: x[1], reverse=True)
+            forum_boosted.sort(key=lambda x: x[1], reverse=True)
+            
+            # В режиме 'auto' резервируем до 50% мест под официальные сервис-мануалы (если найдены)
+            half_k = rerank_k // 2
+            selected_off = official_boosted[:half_k]
+            selected_forum = forum_boosted[:half_k]
+            
+            if len(selected_off) < half_k:
+                extra = half_k - len(selected_off)
+                selected_forum = forum_boosted[: half_k + extra]
+            elif len(selected_forum) < half_k:
+                extra = half_k - len(selected_forum)
+                selected_off = official_boosted[: half_k + extra]
+                
+            merged = selected_off + selected_forum
+            merged.sort(key=lambda x: x[1], reverse=True)
+            reranked = merged[:rerank_k]
+        elif forum_lang == "all":
             ru_boosted = []
             en_boosted = []
             for doc, score in boosted_results:
