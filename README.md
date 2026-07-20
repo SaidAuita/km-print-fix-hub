@@ -65,21 +65,28 @@ Since database indices are large, they are hosted externally.
    * **[Mega.nz Link for Light/Anonymized Index (Index_anon.zip)](https://mega.nz/file/PwgzWZ5Y#FCyCe_iK4DReDT7WoB4kHeHK_iWg_0TNv0oUgWbBhRc)**
 2. Extract the index contents into the `Index/` folder in the project root.
 
-#### 4. Launching the App
+#### 4. Troubleshooting Embeddings Download
+If automatic embeddings download fails (may occur when testing on Python 3.13 / 3.14):
+<p align="center"><img src="images/embeddings_error.jpg" width="65%" alt="embeddings_error" /></p>
+1. Download the required embeddings archive (`embeddings.zip`):
+   * **[Mega.nz Link for Light (Anonymized Index) (embeddings.zip)](https://mega.nz/file/OlxAgCBT#TSSb6HfuwZStFFXQ2LWCdnRaAa0NWt3z3JMt16Eonos)**
+2. Extract the contents of the archive into the `embeddings/` folder in the project root.
+
+#### 5. Launching the App
 Run the startup script:
 ```bash
 start.bat
 ```
 Open your browser and navigate to: `http://127.0.0.1:8000/`
 
-#### 5. Indexing Your Own PDF Manuals
+#### 6. Indexing Your Own PDF Manuals
 To index your own Konica Minolta PDF service manuals:
 1. Place your PDF files into the `Service_manuals/` directory in the project root.
    * **Tip**: If a manual covers multiple models, list their names in the PDF filename (separated by underscores, e.g. `AccurioPress_C14010_C12010_C10500_SM.pdf`). The system will automatically map all pages of this manual to each of those models.
 2. Run the `PDF_INDEXING_ONLY.bat` script. This will extract and index the text of the PDF files, automatically moving them from `Service_manuals/` to the `Archive/official/` folder (to avoid taking duplicate space).
 3. If you need to remove PDF files from the index: manually delete them from the `Archive/official/` directory and run the `PDF_INDEXING_ONLY.bat` script. The index will rebuild and remove their data from the database.
 
-#### 6. Customizing Supported Models List
+#### 7. Customizing Supported Models List
 If a specific Konica Minolta model is missing from the dropdown or is not recognized during searches, you can add it manually:
 1. Open the `models_list.txt` file located in the project root folder.
 2. Add your model name (one per line, e.g., `C14020`) and save the file.
@@ -142,21 +149,28 @@ If a specific Konica Minolta model is missing from the dropdown or is not recogn
    * **[Ссылка на Mega.nz для Light (обезличенный индекс) (Index_anon.zip)](https://mega.nz/file/PwgzWZ5Y#FCyCe_iK4DReDT7WoB4kHeHK_iWg_0TNv0oUgWbBhRc)**
 2. Распакуйте содержимое архива индексов в папку `Index/` в корне проекта.
 
-#### 4. Запуск приложения
+#### 4. Если не скачиваются embeddings
+Если не работает автоматическая загрузка embeddings - при тестировании на Python 3.13 / 3.14 не всегда работает.
+<p align="center"><img src="images/embeddings_error.jpg" width="65%" alt="embeddings_error" /></p>
+1. Скачайте необходимый архив embeddings.zip 
+   * **[Ссылка на Mega.nz для Light (обезличенный индекс) (embeddings.zip)](https://mega.nz/file/OlxAgCBT#TSSb6HfuwZStFFXQ2LWCdnRaAa0NWt3z3JMt16Eonos)**
+2. Распакуйте содержимое архива индексов в папку `embeddings/` в корне проекта.
+
+#### 5. Запуск приложения
 Запустите стартовый файл:
 ```bash
 start.bat
 ```
 Откройте в браузере: `http://127.0.0.1:8000/`
 
-#### 5. Индексирование собственных PDF-руководств
+#### 6. Индексирование собственных PDF-руководств
 Для индексирования собственных сервис-мануалов Konica Minolta в формате PDF:
 1. Поместите ваши файлы PDF в папку `Service_manuals/` в корне проекта.
    * **Совет**: Если руководство охватывает несколько моделей, перечислите их названия в имени файла PDF через подчеркивание (например, `AccurioPress_C14010_C12010_C10500_SM.pdf`). Система автоматически привяжет все страницы этого руководства к каждой из указанных моделей.
 2. Запустите файл `PDF_INDEXING_ONLY.bat`. Скрипт извлечет текст, сгенерирует эмбеддинги и автоматически переместит PDF-файлы из папки `Service_manuals/` в папку `Archive\official/` (чтобы не занимать лишнее место на диске дублями файлов).
 3. Если нужно удалить файлы PDF из индекса: вручную удалите их из папки `Archive\official/` и запустите файл `PDF_INDEXING_ONLY.bat`. Индекс перестроится и удалит информацию из базы данных.
 
-#### 6. Добавление собственных моделей
+#### 7. Добавление собственных моделей
 Если какая-то модель Konica Minolta отсутствует в выпадающем списке или не распознается при поиске, вы можете добавить её самостоятельно:
 1. Откройте файл `models_list.txt` в корневой папке проекта.
 2. Допишите название вашей модели (по одной на строке, например, `C14020`) и сохраните изменения.
