@@ -49,6 +49,9 @@
         "generating_response": "Генерация ответа моделью...",
         "settings_title": "Настройки системы RAG",
         "settings_llm_provider": "Провайдер LLM",
+        "settings_llm_provider_none": "без LLM, только поиск",
+        "no_llm_mode": "без LLM (только поиск)",
+        "llm_analysis_disabled": "LLM-анализ отключен (режим только поиска). Отображаются результаты поиска:",
         "settings_api_base": "LM Studio API Base",
         "settings_ollama_api_base": "Ollama API Base",
         "settings_llm_model": "Название модели LLM (или пусто для авто)",
@@ -178,7 +181,6 @@
         "summarized_chunks_label": "Сжатых чанков в базе",
         "indicator_rag_speed": "Скорость",
         "indicator_rag_quality": "Качество",
-        "llm_analysis_disabled": "Анализ LLM отключен. Ниже представлены найденные первоисточники:",
         "context_mode_off": "Отключен (только поиск)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Макс. слов для «Качества»",
@@ -237,6 +239,9 @@
         "generating_response": "Generating response...",
         "settings_title": "RAG System Settings",
         "settings_llm_provider": "LLM Provider",
+        "settings_llm_provider_none": "No LLM, search only",
+        "no_llm_mode": "No LLM (search only)",
+        "llm_analysis_disabled": "LLM analysis is disabled (search-only mode). Showing search results:",
         "settings_api_base": "LM Studio API Base",
         "settings_ollama_api_base": "Ollama API Base",
         "settings_llm_model": "LLM Model Name (or empty for auto)",
@@ -366,7 +371,6 @@
         "summarized_chunks_label": "Summarized chunks in DB",
         "indicator_rag_speed": "Speed",
         "indicator_rag_quality": "Quality",
-        "llm_analysis_disabled": "LLM analysis is disabled. Here are the retrieved source materials:",
         "context_mode_off": "Disabled (search only)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Max words for Quality",
@@ -554,14 +558,16 @@
         "summarized_chunks_label": "Zusammengefasste Abschnitte in DB",
         "indicator_rag_speed": "Geschwindigkeit",
         "indicator_rag_quality": "Qualität",
-        "llm_analysis_disabled": "LLM-Analyse ist deaktiviert. Hier sind die gefundenen Quellmaterialien:",
+        "llm_analysis_disabled": "LLM-Analyse ist deaktiviert (nur Suchmodus). Suchergebnisse werden angezeigt:",
         "context_mode_off": "Deaktiviert (nur Suche)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Max. Wörter für Qualität",
         "settings_speed_words": "Max. Wörter für Geschwindigkeit / OFF",
         "translate_thread_titles": "Thementitel übersetzen",
         "response_time": "Antwortzeit",
-        "forum_lang_label": "Foren"
+        "forum_lang_label": "Foren",
+        "settings_llm_provider_none": "ohne LLM, nur Suche",
+        "no_llm_mode": "ohne LLM (nur Suche)"
     },
     "fr": {
         "lang_code": "fr",
@@ -742,14 +748,16 @@
         "summarized_chunks_label": "Tronçons résumés dans la base",
         "indicator_rag_speed": "Vitesse",
         "indicator_rag_quality": "Qualité",
-        "llm_analysis_disabled": "L'analyse LLM est désactivée. Voici les documents sources trouvés :",
+        "llm_analysis_disabled": "L'analyse LLM est désactivée (mode recherche uniquement). Affichage des résultats de recherche :",
         "context_mode_off": "Désactivé (recherche uniquement)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Mots max pour Qualité",
         "settings_speed_words": "Mots max pour Vitesse / OFF",
         "translate_thread_titles": "Traduire les titres des fils",
         "response_time": "Temps de réponse",
-        "forum_lang_label": "Forums"
+        "forum_lang_label": "Forums",
+        "settings_llm_provider_none": "sans LLM, recherche uniquement",
+        "no_llm_mode": "sans LLM (recherche uniquement)"
     },
     "es": {
         "lang_code": "es",
@@ -930,14 +938,16 @@
         "summarized_chunks_label": "Fragmentos resumidos en la BD",
         "indicator_rag_speed": "Velocidad",
         "indicator_rag_quality": "Calidad",
-        "llm_analysis_disabled": "El análisis de LLM está desactivado. Aquí están los materiales de origen encontrados:",
+        "llm_analysis_disabled": "El análisis de LLM está desactivado (modo solo búsqueda). Mostrando resultados de búsqueda:",
         "context_mode_off": "Desactivado (solo búsqueda)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Máx. palabras para Calidad",
         "settings_speed_words": "Máx. palabras para Velocidad / OFF",
         "translate_thread_titles": "Traducir títulos de hilos",
         "response_time": "Tiempo de respuesta",
-        "forum_lang_label": "Foros"
+        "forum_lang_label": "Foros",
+        "settings_llm_provider_none": "sin LLM, solo búsqueda",
+        "no_llm_mode": "sin LLM (solo búsqueda)"
     },
     "it": {
         "lang_code": "it",
@@ -1118,14 +1128,16 @@
         "summarized_chunks_label": "Frammenti sintetizzati nel database",
         "indicator_rag_speed": "Velocità",
         "indicator_rag_quality": "Qualità",
-        "llm_analysis_disabled": "L'analisi LLM è disabilitata. Ecco i materiali sorgente trovati:",
+        "llm_analysis_disabled": "L'analisi LLM è disattivata (modalità solo ricerca). Visualizzazione dei risultati di ricerca:",
         "context_mode_off": "Disabilitato (solo ricerca)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Parole max per Qualità",
         "settings_speed_words": "Parole max per Velocità / OFF",
         "translate_thread_titles": "Traduci i titoli delle discussioni",
         "response_time": "Tempo di risposta",
-        "forum_lang_label": "Forum"
+        "forum_lang_label": "Forum",
+        "settings_llm_provider_none": "senza LLM, solo ricerca",
+        "no_llm_mode": "senza LLM (solo ricerca)"
     },
     "zh": {
         "lang_code": "zh",
@@ -1306,14 +1318,16 @@
         "summarized_chunks_label": "数据库中已摘要的块",
         "indicator_rag_speed": "速度",
         "indicator_rag_quality": "质量",
-        "llm_analysis_disabled": "LLM 分析已禁用。以下是检索到的源材料：",
+        "llm_analysis_disabled": "LLM 分析已禁用（仅搜索模式）。显示搜索结果：",
         "context_mode_off": "已禁用 (仅搜索)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "“质量”模式最大字数",
         "settings_speed_words": "“速度/关闭”模式最大字数",
         "translate_thread_titles": "翻译主题标题",
         "response_time": "响应时间",
-        "forum_lang_label": "论坛"
+        "forum_lang_label": "论坛",
+        "settings_llm_provider_none": "无 LLM，仅搜索",
+        "no_llm_mode": "无 LLM（仅搜索）"
     },
     "ja": {
         "lang_code": "ja",
@@ -1494,14 +1508,16 @@
         "summarized_chunks_label": "DB内の要約済みセグメント",
         "indicator_rag_speed": "速度",
         "indicator_rag_quality": "品質",
-        "llm_analysis_disabled": "LLM分析は無効です。見つかったソース資料は次のとおりです。",
+        "llm_analysis_disabled": "LLM解析は無効です（検索専用モード）。検索結果を表示しています：",
         "context_mode_off": "無効 (検索のみ)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "「品質」の最大語数",
         "settings_speed_words": "「速度/オフ」の最大語数",
         "translate_thread_titles": "スレッドタイトルの翻訳",
         "response_time": "応答時間",
-        "forum_lang_label": "フォーラム"
+        "forum_lang_label": "フォーラム",
+        "settings_llm_provider_none": "LLMなし、検索のみ",
+        "no_llm_mode": "LLMなし（検索のみ）"
     },
     "pt": {
         "lang_code": "pt",
@@ -1682,11 +1698,13 @@
         "about_plugin_desc": "Um poderoso plugin para Photoshop desenvolvido com ComfyUI, que oferece integração direta com modelos gerativos locais sem nuvens, assinaturas ou taxas recorrentes.",
         "indicator_rag_speed": "Velocidade",
         "indicator_rag_quality": "Qualidade",
-        "llm_analysis_disabled": "A análise LLM está desativada. Aqui estão os materiais de origem encontrados:",
+        "llm_analysis_disabled": "A análise de LLM está desativada (modo apenas busca). Mostrando resultados de busca:",
         "context_mode_off": "Desativado (apenas busca)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Palavras máx. para Qualidade",
-        "settings_speed_words": "Palavras máx. para Velocidade / OFF"
+        "settings_speed_words": "Palavras máx. para Velocidade / OFF",
+        "settings_llm_provider_none": "sem LLM, apenas busca",
+        "no_llm_mode": "sem LLM (apenas busca)"
     },
     "tr": {
         "lang_code": "tr",
@@ -1867,13 +1885,15 @@
         "summarized_chunks_label": "Veritabanındaki özetlenmiş parçalar",
         "indicator_rag_speed": "Hız",
         "indicator_rag_quality": "Kalite",
-        "llm_analysis_disabled": "LLM analizi devre dışı bırakıldı. Bulunan kaynak materyaller aşağıdadır:",
+        "llm_analysis_disabled": "LLM analizi devre dışı bırakıldı (yalnızca arama modu). Arama sonuçları gösteriliyor:",
         "context_mode_off": "Devre dışı (yalnızca arama)",
         "indicator_rag_off": "OFF",
         "settings_quality_words": "Kalite için maksimum kelime",
         "settings_speed_words": "Hız / OFF için maksimum kelime",
         "translate_thread_titles": "Konu başlıklarını çevir",
         "response_time": "Yanıt süresi",
-        "forum_lang_label": "Forumlar"
+        "forum_lang_label": "Forumlar",
+        "settings_llm_provider_none": "LLM yok, yalnızca arama",
+        "no_llm_mode": "LLM yok (yalnızca arama)"
     }
 }

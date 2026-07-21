@@ -116,7 +116,7 @@
                         {{ t.title }}
                     </h1>
                     <span class="text-xs text-gray-500">
-                        {{ t.active_model }}: <span class="text-brand-500 font-semibold" id="loadedModelName">{{ loaded_model }}</span>
+                        {{ t.active_model }}: <span class="{% if settings.LLM_PROVIDER == 'none' or settings.provider == 'none' %}text-amber-400 font-semibold{% else %}text-brand-500 font-semibold{% endif %}" id="loadedModelName">{{ loaded_model }}</span>
                     </span>
                 </div>
                 
@@ -435,6 +435,7 @@
                                 <select id="llmProviderSelect" name="LLM_PROVIDER" onchange="updateProviderInputs()" class="w-full bg-[#142036] border border-[#1e293b] focus:border-brand-500 rounded-lg px-3 py-2 focus:outline-none text-gray-200 cursor-pointer">
                                     <option value="lmstudio" {% if settings.LLM_PROVIDER == 'lmstudio' or settings.provider == 'lmstudio' or not settings.LLM_PROVIDER %}selected{% endif %}>LM Studio</option>
                                     <option value="ollama" {% if settings.LLM_PROVIDER == 'ollama' or settings.provider == 'ollama' %}selected{% endif %}>Ollama</option>
+                                    <option value="none" {% if settings.LLM_PROVIDER == 'none' or settings.provider == 'none' %}selected{% endif %}>{{ t.settings_llm_provider_none | default('без LLM, только поиск') }}</option>
                                 </select>
                             </div>
                             <div>
@@ -796,6 +797,7 @@
             const ollamaContainer = document.getElementById("ollamaUrlContainer");
             const lmstudioInput = document.getElementById("lmstudioUrlInput");
             const ollamaInput = document.getElementById("ollamaUrlInput");
+            const modelSelect = document.getElementById("llmModelSelect");
             
             if (providerSelect.value === "lmstudio") {
                 lmstudioContainer.classList.remove("opacity-40", "pointer-events-none");
@@ -803,12 +805,24 @@
                 
                 ollamaContainer.classList.add("opacity-40", "pointer-events-none");
                 ollamaInput.setAttribute("readonly", "true");
-            } else {
+                
+                if (modelSelect) modelSelect.removeAttribute("disabled");
+            } else if (providerSelect.value === "ollama") {
                 lmstudioContainer.classList.add("opacity-40", "pointer-events-none");
                 lmstudioInput.setAttribute("readonly", "true");
                 
                 ollamaContainer.classList.remove("opacity-40", "pointer-events-none");
                 ollamaInput.removeAttribute("readonly");
+                
+                if (modelSelect) modelSelect.removeAttribute("disabled");
+            } else {
+                lmstudioContainer.classList.add("opacity-40", "pointer-events-none");
+                lmstudioInput.setAttribute("readonly", "true");
+                
+                ollamaContainer.classList.add("opacity-40", "pointer-events-none");
+                ollamaInput.setAttribute("readonly", "true");
+                
+                if (modelSelect) modelSelect.setAttribute("disabled", "true");
             }
             
             if (typeof refreshModelList === "function") {

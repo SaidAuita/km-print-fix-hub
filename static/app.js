@@ -624,13 +624,21 @@ async function refreshModelList() {
     const currentValue = selectEl.value;
     selectEl.innerHTML = "";
     
+    const provider = providerSelect ? providerSelect.value : "lmstudio";
+    if (provider === "none") {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "— (без LLM / No LLM) —";
+        selectEl.appendChild(option);
+        return;
+    }
+    
     // Опция автоопределения
     const autoOption = document.createElement("option");
     autoOption.value = "";
     autoOption.textContent = "Auto Detect / Автоопределение";
     selectEl.appendChild(autoOption);
     
-    const provider = providerSelect.value;
     const apiBase = provider === "ollama" ? ollamaUrl : lmstudioUrl;
     
     try {

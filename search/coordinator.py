@@ -83,6 +83,8 @@ class SearchCoordinator:
             from llm.client import LLMClient
             client = LLMClient()
             api_base = client.get_api_base()
+            if not api_base:
+                return query_text
             api_url = f"{api_base.rstrip('/')}/chat/completions"
             model_name = client.get_model_name()
             
@@ -139,6 +141,8 @@ class SearchCoordinator:
             import json
             client = LLMClient()
             api_base = client.get_api_base()
+            if not api_base:
+                return query_text, query_text
             api_url = f"{api_base.rstrip('/')}/chat/completions"
             model_name = client.get_model_name()
             

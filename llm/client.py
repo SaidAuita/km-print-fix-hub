@@ -11,9 +11,12 @@ class LLMClient:
 
     def get_api_base(self):
         """
-        Возвращает адрес активного провайдера LLM (LM Studio или Ollama).
+        Возвращает адрес активного провайдера LLM (LM Studio или Ollama), или None если провайдер отключен.
         """
         provider = self.config_mgr.get("LLM_PROVIDER", self.config_mgr.get("provider", "lmstudio"))
+        if provider in ("none", "off"):
+            return None
+            
         providers = self.config_mgr.get("LLM_PROVIDERS", self.config_mgr.get("providers", {}))
         
         if isinstance(providers, dict) and provider in providers:
@@ -31,6 +34,8 @@ class LLMClient:
         Запрашивает список активных моделей из LM Studio или Ollama.
         """
         api_base = self.get_api_base()
+        if not api_base:
+            return "без LLM (только поиск)"
         models_url = f"{api_base.rstrip('/')}/models"
         try:
             response = requests.get(models_url, timeout=3)
@@ -47,6 +52,9 @@ class LLMClient:
         """
         Возвращает имя модели из настроек (LLM_MODEL) или автоопределяет активную.
         """
+        provider = self.config_mgr.get("LLM_PROVIDER", self.config_mgr.get("provider", "lmstudio"))
+        if provider in ("none", "off"):
+            return "без LLM (только поиск)"
         configured_model = self.config_mgr.get("LLM_MODEL")
         if configured_model:
             return configured_model
@@ -180,6 +188,10 @@ class LLMClient:
         Генерирует ответ в виде потока чанков (SSE).
         """
         api_base = self.get_api_base()
+        if not api_base:
+            yield "LLM-анализ отключен (режим только поиска). Отображаются результаты поиска:"
+            return
+
         api_url = f"{api_base.rstrip('/')}/chat/completions"
         model_name = self.get_model_name()
         
@@ -235,6 +247,9 @@ class LLMClient:
         Translates a given text into target_lang (e.g. 'en', 'ru', 'de') using the local LLM.
         """
         api_base = self.get_api_base()
+        if not api_base:
+            return text
+
         api_url = f"{api_base.rstrip('/')}/chat/completions"
         model_name = self.get_model_name()
         

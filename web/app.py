@@ -108,10 +108,15 @@ history_mgr = HistoryManager(db_path=os.path.join(BASE_DIR, "history.db"))
 async def read_root(request: Request):
     history = history_mgr.get_history()
     settings = config_mgr.get_all()
-    loaded_model = llm_client.get_model_name()
     
     lang = settings.get("LAST_LANG", "ru")
     t = translations.get(lang, translations.get("ru", {}))
+    
+    llm_provider = settings.get("LLM_PROVIDER", settings.get("provider", "lmstudio"))
+    if llm_provider in ("none", "off"):
+        loaded_model = t.get("no_llm_mode", "без LLM (только поиск)")
+    else:
+        loaded_model = llm_client.get_model_name()
     
     # Совместимость со старыми и новыми версиями Starlette/FastAPI:
     # В Starlette 0.28+ сигнатура: TemplateResponse(request, name, context)
@@ -228,8 +233,9 @@ async def ask_question(request: Request):
     # Перевод названий тем форумов на язык интерфейса (опционально)
     translate_titles = config_mgr.get("TRANSLATE_THREAD_TITLES", True)
     target_lang = config_mgr.get("LAST_LANG", "ru")
+    current_provider = config_mgr.get("LLM_PROVIDER", config_mgr.get("provider", "lmstudio"))
     
-    if translate_titles:
+    if translate_titles and current_provider not in ("none", "off"):
         unique_threads = {}
         for doc in used_docs_log:
             th_id = doc["thread_id"]
@@ -264,10 +270,10 @@ async def ask_question(request: Request):
         # 2. Стримим ответ от LLM или пишем, что анализ отключен
         context_mode = config_mgr.get("LLM_CONTEXT_MODE", "quality")
         full_answer = ""
-        if context_mode == "off":
+        if context_mode == "off" or current_provider in ("none", "off"):
             lang = config_mgr.get("LAST_LANG", "ru")
             t = translations.get(lang, translations.get("ru", {}))
-            msg = t.get("llm_analysis_disabled", "LLM analysis is disabled. Showing search results:")
+            msg = t.get("llm_analysis_disabled", "LLM-анализ отключен (режим только поиска). Отображаются результаты поиска:")
             full_answer = msg
             yield f"data: {json.dumps({'text': msg}, ensure_ascii=False)}\n\n"
         else:
@@ -310,6 +316,10 @@ async def translate_chunk(request: Request):
     if not text:
         raise HTTPException(status_code=400, detail="Текст для перевода пуст")
         
+    provider = config_mgr.get("LLM_PROVIDER", "lmstudio")
+    if provider in ("none", "off"):
+        return {"translated": text}
+        
     print(f"[*] Requesting translation of chunk to: {target_lang}")
     translated = llm_client.translate_text(text, target_lang)
     print(f"[*] LLM returned translation length: {len(translated)}")
@@ -330,6 +340,9 @@ async def get_available_models(provider: str = None, api_base: str = None):
     """
     if not provider:
         provider = config_mgr.get("LLM_PROVIDER", "lmstudio")
+    if provider in ("none", "off"):
+        return {"models": []}
+
     if not api_base:
         if provider == "ollama":
             api_base = config_mgr.get("OLLAMA_API_BASE", "http://localhost:11434/v1")

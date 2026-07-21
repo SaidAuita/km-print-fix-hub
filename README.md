@@ -22,6 +22,7 @@ RAG (Retrieval-Augmented Generation) search engine and interactive technical sup
 * **Multi-Language Support**: Complete interface translation in 10 languages and bilingual query translation (queries in any language are matched against English and Russian databases).
 * **Anonymization Engine**: Light version replaces posters' names with generic identifiers to maintain privacy.
 * **Dual Context Modes (Quality / Speed)**: Choose between full text context (Quality Mode) or brief AI-generated technical summaries (Fast CPU Mode). Fast mode reduces context size by 2x-5x, providing massive speedups on low-spec/CPU-only machines.
+* **"No LLM" Search-Only Mode**: Instant search mode that completely bypasses LLM text generation and response delays, returning relevant documentation & forum search results immediately when no local LLM is running or needed.
 
 ---
 
@@ -106,6 +107,7 @@ If a specific Konica Minolta model is missing from the dropdown or is not recogn
 * **Многоязычность**: Локализация интерфейса на 10 языков и автоматический перевод поисковых запросов.
 * **Анонимизация данных**: Light-версия заменяет реальные имена пользователей на порядковые маркеры для конфиденциальности.
 * **Двойной режим контекста (Качество / Скорость)**: Возможность выбора между передачей полной версии постов (Качество) и кратких технических выжимок (Скорость). Быстрый режим сокращает объем контекста в 2–5 раз, обеспечивая высокую скорость генерации на слабых ПК и CPU.
+* **Режим «Без LLM (только поиск)»**: Мгновенный режим поиска, полностью отключающий генерацию ответа нейросетью и ожидание LLM, с моментальным выводом релевантных руководств и тем форума при отсутствии подключенного локального сервера LLM.
 
 ---
 
