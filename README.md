@@ -14,6 +14,8 @@ Bilingual documentation / Двуязычная документация: **[Engl
 
 RAG (Retrieval-Augmented Generation) search engine and interactive technical support system for Konica Minolta production printers and copiers.
 
+📺 **Video Guide & Overview**: [Watch on YouTube](https://youtu.be/lr2l1nLy98k)
+
 ### 🌟 Features
 * **Semantic & Keyword Search**: Combined BM25 (SQLite FTS5) and dense vector search (FAISS) for precise troubleshooting matching.
 * **LLM Context Optimizer**: Custom pipeline to merge overlapping threads, strip duplicated quote blocks, and filter out conversational noise, saving up to 70% of LLM token context size.
